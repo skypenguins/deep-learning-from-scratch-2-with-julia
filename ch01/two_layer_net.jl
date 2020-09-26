@@ -17,7 +17,8 @@ mutable struct TwoLayerNet
     layers
     loss_layer
     
-    function TwoLayerNet(I_s, H_s, O_s)
+    function TwoLayerNet(input_size, hidden_size, output_size)
+        I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
         W_1 = 0.01 .* Random.randn(I_s, H_s) 
         b_1 = zeros(H_s)
