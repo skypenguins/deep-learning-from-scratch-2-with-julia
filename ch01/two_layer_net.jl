@@ -23,7 +23,7 @@ mutable struct TwoLayerNet
     function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
         I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
-        W_1 = 0.01 .* Random.randn(I_s, H_s) 
+        W_1 = 0.01 .* Random.randn(I_s, H_s)
         b_1 = zeros(H_s)
         W_2 = 0.01 .* Random.randn(H_s, O_s)
         b_2 = zeros(O_s)
@@ -57,7 +57,7 @@ end
 # Python版のTwoLayersNetのforward()
 function forward(self::TwoLayerNet, x, t)
     score = predict(self, x)
-    loss = forward(self.loss_layer, score, t) # SoftmaxWithLoss()のforward()
+    loss = Layers.forward(self.loss_layer, score, t) # SoftmaxWithLoss()のforward()
     return loss
 end
 
@@ -65,7 +65,7 @@ end
 function backward(self::TwoLayerNet, dout=1)
     dout = backward(self.loss_layer, dout) # SoftmaxWithLoss()のbackward()
     for layer in reverse(self.layers)
-        dout = backward(layer, dout)
+        dout = Layers.backward(layer, dout)
     end
     return dout
 end

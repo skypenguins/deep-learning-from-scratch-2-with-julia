@@ -15,7 +15,7 @@ end
 
 function update(self::SGD, params, grads)
     for i in 1:1:length(params)
-        params[i] -= self.lr .* grads[i] # .-=は破壊的変更
+        params[i] -= self.lr * grads[i] # .-=は破壊的変更
     end
 end
 end

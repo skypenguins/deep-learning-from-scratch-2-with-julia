@@ -13,14 +13,15 @@ mutable struct MatMul <: Layer
     W
     x
     function MatMul(W)
-        params = [W]
-        grads = [zero(W)]
+        params = (W,)
+        grads = (zero(W),)
         new(params, grads, W)
     end
 end
 
 function forward(self::MatMul, x)
-    out = self.x * self.params[1]
+    W, = self.params
+    out = x * W
     self.x = x
     return out
 end
@@ -40,27 +41,27 @@ mutable struct Affine <: Layer
     b
     x
     function Affine(W, b)
-        params = [W, b]
-        grads = [zero(W), zero(b)]
+        params = (W, b) # Pythonのlistの代わりにtupleを利用
+        grads = (zero(W), zero(b))
         new(params, grads)
     end
 end
 
-function forward(self::Affine, dout)
+function forward(self::Affine, x)
     W, b = self.params
-    dx = dout * W'
-    dW = self.x' * dout
-    db = sum(dout, dims=1)
-    self.grads[1] = deepcopy(dW)
-    seld.grads[2] = deepcopy(db)
-    return dx
+    out = x * W .+ b' # JuliaのブロードキャストはNumPyと挙動が異なり，次元を追加しないため，転置して次元数を揃える
+    self.x = x
+    return out
 end
 
 function backward(self::Affine, dout)
     W, b = self.params
     dx = dout * W'
     dW = self.x' * dout
+    @show size(dx)
+    @show size(dW)
     db = sum(dout, dims=1)
+
     self.grads[1] = deepcopy(dW)
     self.grads[2] = deepcopy(db)
     return dx
@@ -71,8 +72,8 @@ mutable struct Softmax <: Layer
     grads
     out
     function Softmax()
-        params = Array
-        grads = Array
+        params = tuple
+        grads = tuple
         new(params, grads)
     end
 end
@@ -83,9 +84,9 @@ function forward(self::Softmax, x)
 end
 
 function backward(self::Softmax, dout)
-    dx = self.out * dout
+    dx = self.out .* dout
     sumdx = sum(dx, dims=2)
-    dx = dx .- self.out * sumdx
+    dx -= self.out .* sumdx
     return dx
 end
 
@@ -95,8 +96,8 @@ mutable struct SoftmaxWithLoss <: Layer
     y # softmaxの出力
     t # 教師ラベル
     function SoftmaxWithLoss()
-        params = Array
-        grads = Array
+        params = tuple
+        grads = tuple
         new(params, grads)
     end
 end
@@ -118,7 +119,7 @@ function backward(self::SoftmaxWithLoss, dout=1)
     batch_size = size(self.t, 1)
     
     dx = deepcopy(self.y)
-    dx[collect(1:batch_size), self.t] -= 1
+    dx[collect(1:batch_size), self.t] -= 1 # 配列のスライスはコンマ必要
     dx = dx .* dout
     dx = dx ./ batch_size
     return dx
@@ -129,20 +130,20 @@ mutable struct Sigmoid <: Layer
     grads
     out
     function Sigmoid()
-        params = Array
-        grads = Array
+        params = tuple
+        grads = tuple
         new(params, grads)
     end
 end
 
 function forward(self::Sigmoid, x)
-    out = 1 ./ (1 + exp.(-x))
+    out = 1 ./ (1 .+ exp.(-x))
     self.out = out
     return out
 end
 
 function backward(self::Sigmoid, dout)
-    dx = dout .* (1.0 - self.out) * self.out
+    dx = dout .* (1.0 .- self.out) * self.out
     return dx
 end
 end
