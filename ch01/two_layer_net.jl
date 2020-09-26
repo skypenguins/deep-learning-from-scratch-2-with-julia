@@ -17,7 +17,7 @@ mutable struct TwoLayerNet
     layers
     loss_layer
     
-    function TwoLayerNet(input_size, hidden_size, output_size)
+    function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentsのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
         I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
         W_1 = 0.01 .* Random.randn(I_s, H_s) 
