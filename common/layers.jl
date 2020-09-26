@@ -1,6 +1,10 @@
+module Layers
+export MatMul, Affine, Softmax, SoftmaxWithLoss, forward, backward
+
+include("./functions.jl")
+
 using .Functions
 
-module Layers
 abstract type Layer end
 
 mutable struct MatMul <: Layer
@@ -15,13 +19,13 @@ mutable struct MatMul <: Layer
     end
 end
 
-function forward(x, self::MatMul)
+function forward(self::MatMul, x)
     out = self.x * self.params[1]
     self.x = x
     return out
 end
 
-function backward(dout, self::MatMul)
+function backward(self::MatMul, dout)
     W, = self.params
     dx = dout * W'
     dW = self.x' * dout
@@ -42,7 +46,7 @@ mutable struct Affine <: Layer
     end
 end
 
-function forward(x, self::Affine)
+function forward(self::Affine, x)
     W, b = self.params
     dx = dout * W'
     dW = self.x' * dout
@@ -52,7 +56,7 @@ function forward(x, self::Affine)
     return dx
 end
 
-function backward(dout, self::Affine)
+function backward(self::Affine, dout)
     W, b = self.params
     dx = dout * W'
     dW = self.x' * dout
@@ -72,12 +76,12 @@ mutable struct Softmax <: Layer
     end
 end
 
-function forward(x, self::Softmax)
+function forward(self::Softmax, x)
     self.out = softmax(x)
     return self.out
 end
 
-function backward(dout, self::Softmax)
+function backward(self::Softmax, dout)
     dx = self.out * dout
     sumdx = sum(dx, dims=2)
     dx = dx .- self.out * sumdx
@@ -104,11 +108,11 @@ function forward(x, t, self::SoftmaxWithLoss)
         self.t = argmax(self.t, dims=2)
     end
 
-    loss = cross_entropy_erro(self.y, self.t)
+    loss = cross_entropy_error(self.y, self.t)
     return loss
 end
 
-function backward(dout=1, self::SoftmaxWithLoss)
+function backward(self::SoftmaxWithLoss, dout=1)
     batch_size = size(self.t, 1)
     
     dx = deepcopy(self.y)
