@@ -49,7 +49,7 @@ end
 # Python版のTwoLayerNetのpredict()
 function predict(self::TwoLayerNet, x)
     for layer in self.layers
-        x = Layers.forward(layer, x) # TODO:Layers無しにできないか
+        x = Layers.forward(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
     end
     return x
 end
