@@ -46,7 +46,7 @@ mutable struct Affine <: Layer
     end
 end
 
-function forward(self::Affine, x)
+function forward(self::Affine, dout)
     W, b = self.params
     dx = dout * W'
     dW = self.x' * dout
