@@ -73,6 +73,7 @@ mutable struct Softmax <: Layer
     function Softmax()
         params = Array
         grads = Array
+        new(params, grads)
     end
 end
 
@@ -88,7 +89,7 @@ function backward(self::Softmax, dout)
     return dx
 end
 
-mutable struct SoftmaxWithLoss
+mutable struct SoftmaxWithLoss <: Layer
     params
     grads
     y # softmaxの出力
@@ -96,6 +97,7 @@ mutable struct SoftmaxWithLoss
     function SoftmaxWithLoss()
         params = Array
         grads = Array
+        new(params, grads)
     end
 end
 
@@ -121,15 +123,15 @@ function backward(self::SoftmaxWithLoss, dout=1)
     dx = dx ./ batch_size
     return dx
 end
-end
 
 mutable struct Sigmoid <: Layer
     params
     grads
     out
     function Sigmoid()
-        out = Nothing
-        new(out)
+        params = Array
+        grads = Array
+        new(params, grads)
     end
 end
 
@@ -142,4 +144,5 @@ end
 function backward(self::Sigmoid, dout)
     dx = dout .* (1.0 - self.out) * self.out
     return dx
+end
 end
