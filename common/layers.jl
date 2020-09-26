@@ -116,7 +116,7 @@ function backward(self::SoftmaxWithLoss, dout=1)
     batch_size = size(self.t, 1)
     
     dx = deepcopy(self.y)
-    dx[collect(1:batch_size), self.t] .-= 1
+    dx[collect(1:batch_size), self.t] -= 1
     dx = dx .* dout
     dx = dx ./ batch_size
     return dx
