@@ -8,7 +8,7 @@ mutable struct SGD <: Optim
     確率的勾配降下法
     Stocastic Gradient Descent =#
     lr
-    function SGD(lr=0.01)
+    function SGD(;lr=0.01)
         new(lr)
     end
 end
