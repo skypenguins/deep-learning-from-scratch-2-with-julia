@@ -17,6 +17,8 @@ mutable struct TwoLayerNet
     b_2
     layers
     loss_layer
+    params
+    grads
     
     function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentsのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
         I_s, H_s, O_s = input_size, hidden_size, output_size
@@ -32,8 +34,15 @@ mutable struct TwoLayerNet
             Sigmoid(),
             Affine(W_2, b_2)
         ]
+
+        # すべての重みと勾配をまとめる
+        params, grads = [], []
+        for layer in layers
+            params += layer.params
+            grads += layer.grads
+        end
         loss_layer = SoftmaxWithLoss()
-        new(I_s, H_s, O_s, W_1, b_1, W_2, b_2, layers, loss_layer)
+        new(I_s, H_s, O_s, W_1, b_1, W_2, b_2, layers, loss_layer, params, grads)
     end
 end
 
