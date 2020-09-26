@@ -1,5 +1,5 @@
 module Layers
-export MatMul, Affine, Softmax, SoftmaxWithLoss, forward, backward
+export MatMul, Affine, Softmax, SoftmaxWithLoss, Sigmoid, forward, backward
 
 include("./functions.jl")
 
