@@ -12,7 +12,7 @@ mutable struct SGD <: Optim
     end
 end
 
-function update(params, grads, self::SGD)
+function update(self::SGD, params, grads)
     for i in 1:1:length(params)
         params[i] .-= self.lr .* grads[i]
     end
