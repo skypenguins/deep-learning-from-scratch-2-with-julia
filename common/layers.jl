@@ -99,7 +99,7 @@ mutable struct SoftmaxWithLoss
     end
 end
 
-function forward(x, t, self::SoftmaxWithLoss)
+function forward(self::SoftmaxWithLoss, x, t)
     self.t = t
     self.y = softmax(x)
 
