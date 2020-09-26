@@ -4,6 +4,7 @@ export TwoLayerNet, predict, forward, backward
 include("../common/layers.jl")
 
 using .Layers
+using Random
 
 # TwoLayerNetの定義
 mutable struct TwoLayerNet
