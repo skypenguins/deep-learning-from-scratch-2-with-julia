@@ -1,4 +1,5 @@
 module Optimizer
+export SGD, update
 
 abstract type Optim end
 
