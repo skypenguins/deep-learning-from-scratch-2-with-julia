@@ -20,7 +20,7 @@ mutable struct TwoLayerNet
     params
     grads
     
-    function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentsのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
+    function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
         I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
         W_1 = 0.01 .* Random.randn(I_s, H_s) 
@@ -38,8 +38,8 @@ mutable struct TwoLayerNet
         # すべての重みと勾配をまとめる
         params, grads = [], []
         for layer in layers
-            params += layer.params
-            grads += layer.grads
+            params = vcat(params, layer.params)
+            grads = vcat(params, layer.grads)
         end
         loss_layer = SoftmaxWithLoss()
         new(I_s, H_s, O_s, W_1, b_1, W_2, b_2, layers, loss_layer, params, grads)
