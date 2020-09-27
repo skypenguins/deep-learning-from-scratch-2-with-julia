@@ -11,6 +11,19 @@ function relu(x) <: Func
     return max(0, x) # NOT maximum()
 end
 
+#= バッチ対応版ソフトマックス関数
+softmax(a::Array{Float64,2})::Array{Float64,2} = begin
+    y = []
+    for row in 1:size(a, 1)
+        c = maximum(a[row, :])
+        exp_a = exp.(a[row, :] .- c) # オーバフロー対策
+        push!(y, exp_a ./ sum(exp_a))
+    end
+    hcat(y...)'
+end
+
+cross_entropy_error(y::Array{Float64,2}, t::Array{Float64,2})::Float64 = -sum(t .* log.(y .+ 1e-7)) =#
+
 function softmax(x) <: Func
     if ndims(x) == 2
         x = x .- maximum(x, dims=2) # Juliaではインデックスは1始まり
@@ -21,7 +34,7 @@ function softmax(x) <: Func
     end
     
     return x
-end
+end 
 
 function cross_entropy_error(y, t) <: Func
     if dims(y) == 1
