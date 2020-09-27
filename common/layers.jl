@@ -1,17 +1,17 @@
-module Layers
+module AbstractLayers
 export MatMul, Affine, Softmax, SoftmaxWithLoss, Sigmoid, forward, backward
 
 include("./functions.jl")
 
-using .Functions
+using .Functions: softmax, cross_entropy_error
 
-abstract type Layer end
+abstract type AbstractLayer end
 
-mutable struct MatMul <: Layer
-    params
-    grads
-    W
-    x
+mutable struct MatMul <: AbstractLayer
+    params::AbstractArray{Float64}
+    grads::AbstractArray{Float64}
+    W::Float64
+    x::Float64
     function MatMul(W)
         params = (W,)
         grads = (zero(W),)
@@ -34,7 +34,7 @@ function backward(self::MatMul, dout)
     return dx
 end
 
-mutable struct Affine <: Layer
+mutable struct Affine <: AbstractLayer
     params
     grads
     W
@@ -67,7 +67,7 @@ function backward(self::Affine, dout)
     return dx
 end
 
-mutable struct Softmax <: Layer
+mutable struct Softmax <: AbstractLayer
     params
     grads
     out
@@ -90,11 +90,11 @@ function backward(self::Softmax, dout)
     return dx
 end
 
-mutable struct SoftmaxWithLoss <: Layer
+mutable struct SoftmaxWithLoss <: AbstractLayer
     params
     grads
-    y # softmaxの出力
-    t # 教師ラベル
+    y # SoftmaxレイヤからCrossEntropyErrorレイヤへのデータ
+    t
     function SoftmaxWithLoss()
         params = tuple
         grads = tuple
@@ -125,7 +125,7 @@ function backward(self::SoftmaxWithLoss, dout=1)
     return dx
 end
 
-mutable struct Sigmoid <: Layer
+mutable struct Sigmoid <: AbstractLayer
     params
     grads
     out
