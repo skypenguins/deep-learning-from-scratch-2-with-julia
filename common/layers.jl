@@ -41,15 +41,15 @@ mutable struct Affine <: AbstractLayer
     b
     x
     function Affine(W, b)
-        params = (W, b) # Pythonのlistの代わりにtupleを利用
-        grads = (zero(W), zero(b))
+        params = [W, b]
+        grads = [zero(W), zero(b)]
         new(params, grads)
     end
 end
 
 function forward(self::Affine, x)
     W, b = self.params
-    out = x * W .+ b' # JuliaのブロードキャストはNumPyと挙動が異なり，次元を追加しないため，転置して次元数を揃える
+    out = x * W .+ b
     self.x = x
     return out
 end
@@ -58,8 +58,6 @@ function backward(self::Affine, dout)
     W, b = self.params
     dx = dout * W'
     dW = self.x' * dout
-    @show size(dx)
-    @show size(dW)
     db = sum(dout, dims=1)
 
     self.grads[1] = deepcopy(dW)
@@ -72,8 +70,8 @@ mutable struct Softmax <: AbstractLayer
     grads
     out
     function Softmax()
-        params = tuple
-        grads = tuple
+        params = []
+        grads = []
         new(params, grads)
     end
 end
@@ -96,8 +94,8 @@ mutable struct SoftmaxWithLoss <: AbstractLayer
     y # SoftmaxレイヤからCrossEntropyErrorレイヤへのデータ
     t
     function SoftmaxWithLoss()
-        params = tuple
-        grads = tuple
+        params = []
+        grads = []
         new(params, grads)
     end
 end
@@ -108,7 +106,7 @@ function forward(self::SoftmaxWithLoss, x, t)
 
     # 教師ラベルがone-hotベクトルの場合，正解ラベルのインデックスに変換
     if length(self.t) == length(self.y)
-        self.t = argmax(self.t, dims=2)
+        self.t = argmax(self.t, dims=2)[1][1] # Array{CartesianIndex{Int64},2}
     end
 
     loss = cross_entropy_error(self.y, self.t)
@@ -119,7 +117,7 @@ function backward(self::SoftmaxWithLoss, dout=1)
     batch_size = size(self.t, 1)
     
     dx = deepcopy(self.y)
-    dx[collect(1:batch_size), self.t] -= 1 # 配列のスライスはコンマ必要
+    dx[collect(1:batch_size), self.t] .-= 1 # 配列のスライスはコンマ必要
     dx = dx .* dout
     dx = dx ./ batch_size
     return dx
@@ -130,8 +128,8 @@ mutable struct Sigmoid <: AbstractLayer
     grads
     out
     function Sigmoid()
-        params = tuple
-        grads = tuple
+        params = []
+        grads = []
         new(params, grads)
     end
 end
@@ -143,7 +141,7 @@ function forward(self::Sigmoid, x)
 end
 
 function backward(self::Sigmoid, dout)
-    dx = dout .* (1.0 .- self.out) * self.out
+    dx = dout .* (1.0 .- self.out) .* self.out
     return dx
 end
 end
