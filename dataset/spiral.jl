@@ -10,7 +10,7 @@ function load_data(seed=1984)
     DIM = 2             # データの要素数
     CLS_DIM = 3         # クラス数
 
-    x = zeros(N * CLS_DIM, DIM)
+    x::AbstractArray{Float64} = zeros(N * CLS_DIM, DIM)
     t = zeros(Integer, N * CLS_DIM, CLS_DIM)
 
     for j = 0:CLS_DIM - 1 # Juliaではインデックスが1始まりのため
