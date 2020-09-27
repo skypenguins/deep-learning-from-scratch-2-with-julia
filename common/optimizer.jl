@@ -14,8 +14,10 @@ mutable struct SGD <: Optim
 end
 
 function update(self::SGD, params, grads)
-    for i in 1:1:length(params)
-        params[i] -= self.lr * grads[i] # .-=は破壊的変更
+    for i = 1:lastindex(params)
+        for j = 1:lastindex(params[i])
+            params[i][j] = params[i][j] .- self.lr .* grads[i][j] # .-=は破壊的変更
+        end
     end
 end
 end
