@@ -63,7 +63,7 @@ end
 
 # Python版のTwoLayersNetのbackward()
 function backward(self::TwoLayerNet, dout=1)
-    dout = backward(self.loss_layer, dout) # SoftmaxWithLoss()のbackward()
+    dout = Layers.backward(self.loss_layer, dout) # SoftmaxWithLoss()のbackward()
     for layer in reverse(self.layers)
         dout = Layers.backward(layer, dout)
     end
