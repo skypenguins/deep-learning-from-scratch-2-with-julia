@@ -24,9 +24,9 @@ mutable struct TwoLayerNet
         I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
         W_1 = 0.01 .* Random.randn(I_s, H_s)
-        b_1 = zeros(H_s)
+        b_1 = zeros(H_s)' # JuliaのブロードキャストはNumPyと挙動が異なり，次元を追加しないため，予め転置して次元数を揃える
         W_2 = 0.01 .* Random.randn(H_s, O_s)
-        b_2 = zeros(O_s)
+        b_2 = zeros(O_s)'
         
         # レイヤの生成
         layers = [
@@ -38,8 +38,8 @@ mutable struct TwoLayerNet
         # すべての重みと勾配をまとめる
         params, grads = [], []
         for layer in layers
-            params = vcat(params, layer.params)
-            grads = vcat(params, layer.grads)
+            push!(params, layer.params)
+            push!(grads, layer.grads)
         end
         loss_layer = SoftmaxWithLoss()
         new(I_s, H_s, O_s, W_1, b_1, W_2, b_2, layers, loss_layer, params, grads)
