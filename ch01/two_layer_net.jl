@@ -3,7 +3,7 @@ export TwoLayerNet, predict, forward, backward
 # レイヤ定義ファイルの読み込み
 include("../common/layers.jl")
 
-using .Layers
+using .AbstractLayers
 using Random
 
 # TwoLayerNetの定義
@@ -49,7 +49,7 @@ end
 # Python版のTwoLayerNetのpredict()
 function predict(self::TwoLayerNet, x)
     for layer in self.layers
-        x = Layers.forward(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
+        x = AbstractLayers.forward(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
     end
     return x
 end
@@ -57,15 +57,15 @@ end
 # Python版のTwoLayersNetのforward()
 function forward(self::TwoLayerNet, x, t)
     score = predict(self, x)
-    loss = Layers.forward(self.loss_layer, score, t) # SoftmaxWithLoss()のforward()
+    loss = AbstractLayers.forward(self.loss_layer, score, t) # SoftmaxWithLoss()のforward()
     return loss
 end
 
 # Python版のTwoLayersNetのbackward()
 function backward(self::TwoLayerNet, dout=1)
-    dout = Layers.backward(self.loss_layer, dout) # SoftmaxWithLoss()のbackward()
+    dout = AbstractLayers.backward(self.loss_layer, dout) # SoftmaxWithLoss()のbackward()
     for layer in reverse(self.layers)
-        dout = Layers.backward(layer, dout)
+        dout = AbstractLayers.backward(layer, dout)
     end
     return dout
 end
