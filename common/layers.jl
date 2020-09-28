@@ -13,17 +13,17 @@ mutable struct MatMul <: AbstractLayer
     W::Float64
     x::Float64
     function MatMul(W)
-        params = (W,)
-        grads = (zero(W),)
-        new(params, grads, W)
+        self = new()
+        self.params = [W]
+        self.grads = [zero(W)]
+        return self
     end
 end
 
 function forward(self::MatMul, x)
     W, = self.params
-    out = x * W
     self.x = x
-    return out
+    return out = x * W
 end
 
 function backward(self::MatMul, dout)
@@ -41,17 +41,17 @@ mutable struct Affine <: AbstractLayer
     b
     x
     function Affine(W, b)
-        params = [W, b]
-        grads = [zero(W), zero(b)]
-        new(params, grads)
+        self = new()
+        self.params = [W, b]
+        self.grads = [zero(W), zero(b)]
+        return self
     end
 end
 
 function forward(self::Affine, x)
     W, b = self.params
-    out = x * W .+ b
     self.x = x
-    return out
+    return out = x * W .+ b
 end
 
 function backward(self::Affine, dout)
@@ -60,8 +60,8 @@ function backward(self::Affine, dout)
     dW = self.x' * dout
     db = sum(dout, dims=1)
 
-    self.grads[1] = deepcopy(dW)
-    self.grads[2] = deepcopy(db)
+    self.grads[1] = dW
+    self.grads[2] = db
     return dx
 end
 
@@ -70,22 +70,21 @@ mutable struct Softmax <: AbstractLayer
     grads
     out
     function Softmax()
-        params = []
-        grads = []
-        new(params, grads)
+        self = new()
+        self.params = []
+        self.grads = []
+        return self
     end
 end
 
 function forward(self::Softmax, x)
-    self.out = softmax(x)
-    return self.out
+    return self.out = softmax(x)
 end
 
 function backward(self::Softmax, dout)
     dx = self.out .* dout
     sumdx = sum(dx, dims=2)
-    dx -= self.out .* sumdx
-    return dx
+    return dx -= self.out .* sumdx
 end
 
 mutable struct SoftmaxWithLoss <: AbstractLayer
@@ -94,33 +93,22 @@ mutable struct SoftmaxWithLoss <: AbstractLayer
     y # SoftmaxレイヤからCrossEntropyErrorレイヤへのデータ
     t
     function SoftmaxWithLoss()
-        params = []
-        grads = []
-        new(params, grads)
+        self = new()
+        self.params = []
+        self.grads = []
+        return self
     end
 end
 
 function forward(self::SoftmaxWithLoss, x, t)
     self.t = t
     self.y = softmax(x)
-
-    # 教師ラベルがone-hotベクトルの場合，正解ラベルのインデックスに変換
-    if length(self.t) == length(self.y)
-        self.t = argmax(self.t, dims=2)[1][1] # Array{CartesianIndex{Int64},2}
-    end
-
-    loss = cross_entropy_error(self.y, self.t)
-    return loss
+    return loss = cross_entropy_error(self.y, self.t)
 end
 
-function backward(self::SoftmaxWithLoss, dout=1)
+function backward(self::SoftmaxWithLoss, dout=1.0)
     batch_size = size(self.t, 1)
-    
-    dx = deepcopy(self.y)
-    dx[collect(1:batch_size), self.t] .-= 1 # 配列のスライスはコンマ必要
-    dx = dx .* dout
-    dx = dx ./ batch_size
-    return dx
+    return dx = (self.y .- self.t) .* dout ./ batch_size
 end
 
 mutable struct Sigmoid <: AbstractLayer
@@ -128,20 +116,18 @@ mutable struct Sigmoid <: AbstractLayer
     grads
     out
     function Sigmoid()
-        params = []
-        grads = []
-        new(params, grads)
+        self = new()
+        self.params = []
+        self.grads = []
+        return self
     end
 end
 
 function forward(self::Sigmoid, x)
-    out = 1 ./ (1 .+ exp.(-x))
-    self.out = out
-    return out
+    return self.out = 1 ./ (1 .+ exp.(-x))
 end
 
 function backward(self::Sigmoid, dout)
-    dx = dout .* (1.0 .- self.out) .* self.out
-    return dx
+    return dx = dout .* (1.0 .- self.out) .* self.out
 end
 end
