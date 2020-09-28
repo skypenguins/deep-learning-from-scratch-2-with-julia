@@ -8,19 +8,13 @@ using Random
 
 # TwoLayerNetの定義
 mutable struct TwoLayerNet
-    I_s # input_size (Iは単位行列の変数名と衝突するので変更)
-    H_s # hidden_size
-    O_s # output_size
-    W_1
-    b_1
-    W_2
-    b_2
     layers
     loss_layer
     params
     grads
     
     function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
+        self = new()
         I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
         W_1 = 0.01 .* Random.randn(I_s, H_s)
@@ -29,20 +23,20 @@ mutable struct TwoLayerNet
         b_2 = zeros(O_s)'
         
         # レイヤの生成
-        layers = [
+        self.layers = [
             Affine(W_1, b_1),
             Sigmoid(),
             Affine(W_2, b_2)
         ]
 
         # すべての重みと勾配をまとめる
-        params, grads = [], []
-        for layer in layers
-            push!(params, layer.params)
-            push!(grads, layer.grads)
+        self.params, self.grads = [], []
+        for layer in self.layers
+            push!(self.params, layer.params)
+            push!(self.grads, layer.grads)
         end
-        loss_layer = SoftmaxWithLoss()
-        new(I_s, H_s, O_s, W_1, b_1, W_2, b_2, layers, loss_layer, params, grads)
+        self.loss_layer = SoftmaxWithLoss()
+        return self
     end
 end
 
