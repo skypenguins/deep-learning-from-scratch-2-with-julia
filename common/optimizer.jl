@@ -1,5 +1,5 @@
 module Optimizer
-export SGD, update
+export SGD, update!
 
 abstract type Optim end
 
@@ -13,7 +13,7 @@ mutable struct SGD <: Optim
     end
 end
 
-function update(self::SGD, params, grads)
+function update!(self::SGD, params, grads)
     for i = 1:lastindex(params)
         for j = 1:lastindex(params[i])
             params[i][j] = params[i][j] .- self.lr .* grads[i][j] # .-=は破壊的変更
