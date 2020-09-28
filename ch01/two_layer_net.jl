@@ -13,13 +13,13 @@ mutable struct TwoLayerNet
     params
     grads
     
-    function TwoLayerNet(;input_size, hidden_size, output_size) # Keyword Argumentのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
+    function TwoLayerNet(;input_size, hidden_size, output_size, weight_init=0.01) # Keyword Argumentのみの場合はセミコロンが必要 cf. https://docs.julialang.org/en/v1/manual/functions/#Keyword-Arguments
         self = new()
         I_s, H_s, O_s = input_size, hidden_size, output_size
         # 重みとバイアスの初期化
-        W_1 = 0.01 .* Random.randn(I_s, H_s)
+        W_1 = weight_init .* Random.randn(I_s, H_s)
         b_1 = zeros(H_s)' # JuliaのブロードキャストはNumPyと挙動が異なり，次元を追加しないため，予め転置して次元数を揃える
-        W_2 = 0.01 .* Random.randn(H_s, O_s)
+        W_2 = weight_init .* Random.randn(H_s, O_s)
         b_2 = zeros(O_s)'
         
         # レイヤの生成
