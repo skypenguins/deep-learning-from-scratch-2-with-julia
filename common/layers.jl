@@ -8,10 +8,10 @@ using .Functions: softmax, cross_entropy_error
 abstract type AbstractLayer end
 
 mutable struct MatMul <: AbstractLayer
-    params::AbstractArray{Float64}
-    grads::AbstractArray{Float64}
-    W::Float64
-    x::Float64
+    params
+    grads
+    W
+    x
     function MatMul(W)
         self = new()
         self.params = [W]
