@@ -10,7 +10,6 @@ abstract type AbstractLayer end
 mutable struct MatMul <: AbstractLayer
     params
     grads
-    W
     x
     function MatMul(W)
         self = new()
@@ -37,8 +36,6 @@ end
 mutable struct Affine <: AbstractLayer
     params
     grads
-    W
-    b
     x
     function Affine(W, b)
         self = new()
