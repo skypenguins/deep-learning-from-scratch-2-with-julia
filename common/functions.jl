@@ -1,6 +1,7 @@
 module Functions
 export sigmoid, relu, softmax, cross_entropy_error
 
+# TODO:関数の内部にdotを付けるのではなく，関数の呼び出し元にdotを付けるように変更
 function sigmoid(x)
     return 1 ./ (1 .+ exp.(-x))
 end
