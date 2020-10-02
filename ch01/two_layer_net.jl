@@ -1,5 +1,3 @@
-module Two_layer_net
-export TwoLayerNet, predict!, forward!, backward!
 # レイヤ定義ファイルの読み込み
 include("../common/layers.jl")
 
@@ -41,26 +39,25 @@ mutable struct TwoLayerNet
 end
 
 # Python版のTwoLayerNetのpredict()
-function predict!(self::TwoLayerNet, x)
-    for layer in self.layers
+function predict!(model::TwoLayerNet, x)
+    for layer in model.layers
         x = AbstractLayers.forward!(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
     end
     return x
 end
 
 # Python版のTwoLayersNetのforward()
-function forward!(self::TwoLayerNet, x, t)
-    score = predict!(self, x)
-    loss = AbstractLayers.forward!(self.loss_layer, score, t) # SoftmaxWithLoss()のforward()
+function forward!(model::TwoLayerNet, x, t)
+    score = predict!(model, x)
+    loss = AbstractLayers.forward!(model.loss_layer, score, t) # SoftmaxWithLoss()のforward()
     return loss
 end
 
 # Python版のTwoLayersNetのbackward()
-function backward!(self::TwoLayerNet, dout=1)
-    dout = AbstractLayers.backward!(self.loss_layer, dout) # SoftmaxWithLoss()のbackward()
-    for layer in reverse(self.layers)
-        dout = AbstractLayers.backward!(layer, dout)
+function backward!(model::TwoLayerNet; dout=1)
+    dout = AbstractLayers.backward!(model.loss_layer, dout=dout) # SoftmaxWithLoss()のbackward()
+    for layer in reverse(model.layers)
+        dout = AbstractLayers.backward!(layer, dout=dout)
     end
     return dout
-end
 end

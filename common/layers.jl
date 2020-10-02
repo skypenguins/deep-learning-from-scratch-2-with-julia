@@ -12,24 +12,25 @@ mutable struct MatMul <: AbstractLayer
     grads
     x
     function MatMul(W)
-        self = new()
-        self.params = [W]
-        self.grads = [zero(W)]
-        return self
+        layer = new()
+        layer.params = [W]
+        layer.grads = [zero(W)]
+        return layer
     end
 end
 
-function forward!(self::MatMul, x)
-    W, = self.params
-    self.x = x
+function forward!(layer::MatMul, x)
+    W, = layer.params
+    layer.x = x
     return out = x * W
 end
 
-function backward!(self::MatMul, dout)
-    W, = self.params
+# Keyword Argのデフォルトが指定されていない場合，必ず呼出側で引数指定する
+function backward!(layer::MatMul; dout)
+    W, = layer.params
     dx = dout * W'
-    dW = self.x' * dout
-    self.grads[1] = deepcopy(dW)
+    dW = layer.x' * dout
+    layer.grads[1] = deepcopy(dW)
     return dx
 end
 
@@ -38,27 +39,27 @@ mutable struct Affine <: AbstractLayer
     grads
     x
     function Affine(W, b)
-        self = new()
-        self.params = [W, b]
-        self.grads = [zero(W), zero(b)]
-        return self
+        layer = new()
+        layer.params = [W, b]
+        layer.grads = [zero(W), zero(b)]
+        return layer
     end
 end
 
-function forward!(self::Affine, x)
-    W, b = self.params
-    self.x = x
+function forward!(layer::Affine, x)
+    W, b = layer.params
+    layer.x = x
     return out = x * W .+ b
 end
 
-function backward!(self::Affine, dout)
-    W, b = self.params
+function backward!(layer::Affine; dout)
+    W, b = layer.params
     dx = dout * W'
-    dW = self.x' * dout
+    dW = layer.x' * dout
     db = sum(dout, dims=1)
 
-    self.grads[1] = dW
-    self.grads[2] = db
+    layer.grads[1] = dW
+    layer.grads[2] = db
     return dx
 end
 
@@ -67,21 +68,21 @@ mutable struct Softmax <: AbstractLayer
     grads
     out
     function Softmax()
-        self = new()
-        self.params = []
-        self.grads = []
-        return self
+        layer = new()
+        layer.params = []
+        layer.grads = []
+        return layer
     end
 end
 
-function forward!(self::Softmax, x)
-    return self.out = softmax(x)
+function forward!(layer::Softmax, x)
+    return layer.out = softmax(x)
 end
 
-function backward!(self::Softmax, dout)
-    dx = self.out .* dout
+function backward!(layer::Softmax; dout)
+    dx = layer.out .* dout
     sumdx = sum(dx, dims=2)
-    return dx -= self.out .* sumdx
+    return dx -= layer.out .* sumdx
 end
 
 mutable struct SoftmaxWithLoss <: AbstractLayer
@@ -90,22 +91,22 @@ mutable struct SoftmaxWithLoss <: AbstractLayer
     y # SoftmaxレイヤからCrossEntropyErrorレイヤへのデータ
     t
     function SoftmaxWithLoss()
-        self = new()
-        self.params = []
-        self.grads = []
-        return self
+        layer = new()
+        layer.params = []
+        layer.grads = []
+        return layer
     end
 end
 
-function forward!(self::SoftmaxWithLoss, x, t)
-    self.t = t
-    self.y = softmax(x)
-    return loss = cross_entropy_error(self.y, self.t)
+function forward!(layer::SoftmaxWithLoss, x, t)
+    layer.t = t
+    layer.y = softmax(x)
+    return loss = cross_entropy_error(layer.y, layer.t)
 end
 
-function backward!(self::SoftmaxWithLoss, dout=1.0)
-    batch_size = size(self.t, 1)
-    return dx = (self.y .- self.t) .* dout ./ batch_size
+function backward!(layer::SoftmaxWithLoss; dout=1.0)
+    batch_size = size(layer.t, 1)
+    return dx = (layer.y .- layer.t) .* dout ./ batch_size
 end
 
 mutable struct Sigmoid <: AbstractLayer
@@ -113,18 +114,18 @@ mutable struct Sigmoid <: AbstractLayer
     grads
     out
     function Sigmoid()
-        self = new()
-        self.params = []
-        self.grads = []
-        return self
+        layer = new()
+        layer.params = []
+        layer.grads = []
+        return layer
     end
 end
 
-function forward!(self::Sigmoid, x)
-    return self.out = 1 ./ (1 .+ exp.(-x))
+function forward!(layer::Sigmoid, x)
+    return layer.out = 1 ./ (1 .+ exp.(-x))
 end
 
-function backward!(self::Sigmoid, dout)
-    return dx = dout .* (1.0 .- self.out) .* self.out
+function backward!(layer::Sigmoid; dout)
+    return dx = dout .* (1.0 .- layer.out) .* layer.out
 end
 end
