@@ -3,7 +3,7 @@ using Random
 
 export load_data
 
-function load_data(seed=1984)
+function load_data(;seed=1984)
     Random.seed!(seed)  # 関数直後の!は関数が破壊的変更を行うことを示す
     @show seed
     N = 100             # クラスごとのサンプルサイズ
