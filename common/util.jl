@@ -10,8 +10,8 @@ function preprocess(text)
 
     for word = words
         if false == get(word_to_id, word, false)
-            new_id = length(word_to_id) + 1 # 単語IDは配列のインデックス番号として使用するため0を含まないようにする
-            push!(word_to_id, word => new_id) # word_to_id = Dict(word_to_id..., word=>new_id) より高速(アロケーションは大きい)
+            new_id = length(word_to_id) + 1     # 単語IDは配列のインデックス番号として使用するため0を含まないようにする
+            push!(word_to_id, word => new_id)   # word_to_id = Dict(word_to_id..., word=>new_id) より高速(アロケーションは大きい)
             push!(id_to_word, new_id => word)
         end
     end
@@ -34,11 +34,11 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     共起行列 =#
 
     corpus_size = length(corpus)
-    co_matrix = zeros((vocab_size, vocab_size)...)
+    co_matrix = zeros(Int32, (vocab_size, vocab_size)...)
 
     for (idx, word_id) = enumerate(corpus)
-        for i = 2:windows_size + 2
-            left_idx = idx - i 
+        for i = 1:windows_size
+            left_idx = idx - i
             right_idx = idx + i
 
             if left_idx >= 1
@@ -46,7 +46,7 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
                 co_matrix[word_id, left_word_id] += 1
             end
 
-            if right_idx < corpus_size
+            if right_idx <= corpus_size
                 right_word_id = corpus[right_idx]
                 co_matrix[word_id, right_word_id] += 1
             end
