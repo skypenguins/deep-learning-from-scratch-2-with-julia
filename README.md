@@ -5,4 +5,5 @@ Porting of "Deep Learning from Scratch 2" in Julia
 - Plots
 - PyCall
   - for `pickle` module
+- HTTP
 - NPZ
