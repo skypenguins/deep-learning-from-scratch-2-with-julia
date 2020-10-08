@@ -1,2 +1,4 @@
 .gitignore
 .*/
+ptb.*.txt
+*.pkl
