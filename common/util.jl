@@ -16,7 +16,7 @@ function preprocess(text)
         end
     end
 
-    corpus = [word_to_id[w] for w = words]
+    corpus = [word_to_id[w] for w = words]' # 転置する
 
     return corpus, word_to_id, id_to_word
 end
