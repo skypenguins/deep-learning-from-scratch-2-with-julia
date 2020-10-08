@@ -57,12 +57,28 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
 end
 
 function cos_similarity(x, y; ϵ=1e-8)
+    #= コサイン類似度の算出
+    パラメータ:
+    x ベクトル
+    y ベクトル
+    ϵ ゼロ除算の防止のための定数
+
+    返り値:
+    内積 =#
     nx = x ./ (sqrt(sum(x.^2)) .+ ϵ)
     ny = y ./ (sqrt(sum(y.^2)) .+ ϵ)
     return dot(nx, ny)
 end
 
 function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
+    #= 類似単語の検索
+    パラメータ:
+    query クエリ（テキスト）
+    word_to_id 単語から単語IDへのディクショナリ
+    id_to_word 単語IDから単語へのディクショナリ
+    word_matrix 単語ベクトルをまとめた行列。各行に対応する単語のベクトルが格納されていることを想定
+    top 上位何位まで表示するか =#
+
     # 1.クエリを取り出す
     if false == get(word_to_id, query, false)
         println("$(query) is not found")
@@ -97,6 +113,14 @@ function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
 end
 
 function ppmi(C; verbose=false, ϵ=1e-8)
+    #= 正の相互情報量（PPMI）の作成
+    パラメータ:
+    C 共起行列
+    verbose 進捗を表示するか
+    ϵ ゼロ除算回避のための定数
+
+    返り値:
+    M PPMI行列 =#
     M = zeros(size(C)...)
     N = sum(C)
     S = sum(C, dims=1)
@@ -128,11 +152,12 @@ function create_context_target(corpus; window_size=1)
     windows_size 窓の大きさ（これが1の場合，単語の左右1単語がコンテキスト）
 
     返り値:
-    なし =#
+    contexts コーパス中の全単語IDのコンテキスト
+    target ターゲットとする単語ID =#
     target = corpus[:, window_size + 1:end - window_size]
     cs = []
 
-    for idx = (window_size + 1):(length(corpus) - window_size) # 2～
+    for idx = (window_size + 1):(length(corpus) - window_size) # window_size=1の場合，開始のインデックス番号は2
         # 各単語のコンテキストを取り出し，csに追加
         push!(cs, corpus[:, filter(!iszero, -window_size:window_size) .+ idx])
     end
