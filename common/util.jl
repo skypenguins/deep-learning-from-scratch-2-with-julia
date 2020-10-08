@@ -118,3 +118,25 @@ function ppmi(C; verbose=false, ϵ=1e-8)
     end
     return M
 end
+
+function create_context_target(corpus; window_size=1)
+    #= 
+    コンテキストとターゲットの作成
+
+    パラメータ:
+    corpus コーパス（単語IDのリスト）
+    windows_size 窓の大きさ（これが1の場合，単語の左右1単語がコンテキスト）
+
+    返り値:
+    なし =#
+    target = corpus[:, window_size + 1:end - window_size]
+    cs = []
+
+    for idx = (window_size + 1):(length(corpus) - window_size) # 2～
+        # 各単語のコンテキストを取り出し，csに追加
+        push!(cs, corpus[:, filter(!iszero, -window_size:window_size) .+ idx])
+    end
+    # 全単語のコンテキストを作成
+    contexts = vcat(cs...)
+    return contexts, target
+end
