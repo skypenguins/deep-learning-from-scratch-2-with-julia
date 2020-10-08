@@ -1,6 +1,3 @@
-module AbstractLayers
-export MatMul, Affine, Softmax, SoftmaxWithLoss, Sigmoid, forward!, backward!
-
 include("./functions.jl")
 
 using .Functions: softmax, cross_entropy_error
@@ -127,5 +124,4 @@ end
 
 function backward!(layer::Sigmoid; dout)
     return dx = dout .* (1.0 .- layer.out) .* layer.out
-end
 end

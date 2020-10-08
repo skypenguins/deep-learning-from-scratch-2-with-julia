@@ -1,7 +1,6 @@
 # レイヤ定義ファイルの読み込み
 include("../common/layers.jl")
 
-using .AbstractLayers
 using Random
 
 # TwoLayerNetの定義
