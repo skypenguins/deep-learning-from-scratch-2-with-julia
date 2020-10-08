@@ -96,7 +96,7 @@ function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
     end
 end
 
-function ppmi(C; verpose=false, ϵ=1e-8)
+function ppmi(C; verbose=false, ϵ=1e-8)
     M = zeros(size(C)...)
     N = sum(C)
     S = sum(C, dims=1)
@@ -108,7 +108,7 @@ function ppmi(C; verpose=false, ϵ=1e-8)
             pmi = log2(C[i, j] .* N ./ (S[j] .* S[i]) + ϵ)
             M[i, j] = max(0, pmi...)
 
-            if verpose == true
+            if verbose == true
                 cnt += 1
                 if cnt % (total ÷ 100) == 0
                     println("$(round((100 .* cnt / total); digits=1))% done")
