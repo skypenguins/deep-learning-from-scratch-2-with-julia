@@ -16,8 +16,7 @@ function preprocess(text)
         end
     end
 
-    corpus = [word_to_id[w] for w = words]' # 転置する
-
+    corpus = [word_to_id[w] for w = words]
     return corpus, word_to_id, id_to_word
 end
 
@@ -146,6 +145,11 @@ end
 function create_context_target(corpus; window_size=1)
     #= 
     コンテキストとターゲットの作成
+    ---
+    行列や配列操作に関して，Juliaでは列指向だがPython（NumPy）では行指向である。
+    そのため，本来ならば行指向の制約から実装されたアルゴリズムを列指向の設計思想で実装し直すことが理想ではあるが，
+    Python版のコードとの比較の観点（と設計力不足）からJulia版のコードにおいても生成されるテンソルの形状をPython版のものと一致させてある。
+    ---
 
     パラメータ:
     corpus コーパス（単語IDのリスト）
@@ -154,14 +158,47 @@ function create_context_target(corpus; window_size=1)
     返り値:
     contexts コーパス中の全単語IDのコンテキスト
     target ターゲットとする単語ID =#
-    target = corpus[:, window_size + 1:end - window_size]
+    target = corpus[window_size + 1:end - window_size]
     cs = []
 
     for idx = (window_size + 1):(length(corpus) - window_size) # window_size=1の場合，開始のインデックス番号は2
         # 各単語のコンテキストを取り出し，csに追加
-        push!(cs, corpus[:, filter(!iszero, -window_size:window_size) .+ idx])
+        push!(cs, corpus[filter(!iszero, -window_size:window_size) .+ idx]')
     end
     # 全単語のコンテキストを作成
     contexts = vcat(cs...)
     return contexts, target
+end
+
+function convert_one_hot(corpus, vocab_size)
+    #= one-hot表現への変換
+    ---
+    行列や配列操作に関して，Juliaでは列指向だがPython（NumPy）では行指向である。
+    そのため，本来ならば行指向の制約から実装されたアルゴリズムを列指向の設計思想で実装し直すことが理想ではあるが，
+    Python版のコードとの比較の観点（と設計力不足）からJulia版のコードにおいても生成されるテンソルの形状をPython版のものと一致させてある。
+    ---
+
+    パラメータ:
+    corpus 単語IDのリスト（1次元もしくは2次元のNumPy配列）
+    vocab_size 語彙の大きさ
+
+    返り値
+    one-hot表現（1次元もしくは2次元のNumPy配列） =#
+    N = size(corpus, 1)
+
+    if ndims(corpus) == 1
+        one_hot = zeros(Int32, N, vocab_size)
+        for (idx, word_id) = enumerate(corpus)
+            one_hot[idx, word_id] = 1
+        end
+    elseif ndims(corpus) == 2
+        C = size(corpus, 2)
+        one_hot = zeros(Int32, N, C, vocab_size)
+        for i = 1:N
+            for j = 1:C
+                one_hot[i, j, corpus[i, j]] = 1
+            end
+        end
+    end
+    return one_hot
 end
