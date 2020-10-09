@@ -31,7 +31,7 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     windows_size 窓の大きさ（これが1の場合，単語の左右1単語がコンテキスト）
     
     返り値:
-    共起行列 =#
+    co_matrix 共起行列 =#
 
     corpus_size = length(corpus)
     co_matrix = zeros(Int32, (vocab_size, vocab_size)...)
