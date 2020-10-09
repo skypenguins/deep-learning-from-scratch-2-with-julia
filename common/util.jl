@@ -146,9 +146,14 @@ function create_context_target(corpus; window_size=1)
     #= 
     コンテキストとターゲットの作成
     ---
-    行列や配列操作に関して，Juliaでは列指向だがPython（NumPy）では行指向である。
-    そのため，本来ならば行指向の制約から実装されたアルゴリズムを列指向の設計思想で実装し直すことが理想ではあるが，
-    Python版のコードとの比較の観点（と設計力不足）からJulia版のコードにおいても生成されるテンソルの形状をPython版のものと一致させてある。
+    Python（NumPy）では1次元配列と$1 \times x$行列は同じ扱いだが，Juliaでは扱いが異なる。  
+    これは配列の扱いがJuliaの列指向とPythonの行指向で異なるためである。  
+    そのため，行指向の設計思想を基に実装されたアルゴリズムを列指向の設計思想で再実装することが理想ではあるが，Python版の行列やテンソルの形状と一致させるため，（あと初心者なので…）無理矢理，行指向の設計思想でコードを実装している。  
+
+    参考:  
+    > Julia arrays are column major (Fortran ordered) whereas NumPy arrays are row major (C-ordered) by default.  
+
+    Source: https://docs.julialang.org/en/v1/manual/noteworthy-differences/#Noteworthy-differences-from-Python
     ---
 
     パラメータ:
@@ -173,9 +178,14 @@ end
 function convert_one_hot(corpus, vocab_size)
     #= one-hot表現への変換
     ---
-    行列や配列操作に関して，Juliaでは列指向だがPython（NumPy）では行指向である。
-    そのため，本来ならば行指向の制約から実装されたアルゴリズムを列指向の設計思想で実装し直すことが理想ではあるが，
-    Python版のコードとの比較の観点（と設計力不足）からJulia版のコードにおいても生成されるテンソルの形状をPython版のものと一致させてある。
+    Python（NumPy）では1次元配列と$1 \times x$行列は同じ扱いだが，Juliaでは扱いが異なる。  
+    これは配列の扱いがJuliaの列指向とPythonの行指向で異なるためである。  
+    そのため，行指向の設計思想を基に実装されたアルゴリズムを列指向の設計思想で再実装することが理想ではあるが，Python版の行列やテンソルの形状と一致させるため，（あと初心者なので…）無理矢理，行指向の設計思想でコードを実装している。  
+
+    参考:  
+    > Julia arrays are column major (Fortran ordered) whereas NumPy arrays are row major (C-ordered) by default.  
+
+    Source: https://docs.julialang.org/en/v1/manual/noteworthy-differences/#Noteworthy-differences-from-Python
     ---
 
     パラメータ:
