@@ -63,3 +63,35 @@ function iteration!(trainer::Trainer, iter, max_iters, total_loss, loss_count, b
     end
     return total_loss, loss_count
 end
+
+function remove_duplicate(params, grads)
+    #= パラメータ配列の重複する重みを一つに集約し，
+    その重みに対応する勾配を加算する =#
+    _params, _grads = params[:, :], grads[:, :]
+
+    while true
+        find_fig = false
+        L = length(_params)
+
+        for i = 1:L
+            for j = (i + 1):(L + 1)
+                # 重みを共有する場合
+                if _params[i, :] == _params[j, :]
+                    grads[i, :] .+= grads[j, :]
+                    find_fig = true
+                    pop!(params[j, :])
+                    pop!(grads[j, :])
+                elseif (ndims(params[i, :]) == 2) && (ndims(params[j, :]) == 2) && \
+                    (size(params[i, :]') == size(params[j, :])) && (params[i, :]' == params[j, :])
+                    grads[i, :] .+= grads[j, :]'
+                    find_fig = true
+                    pop!(params[j, :])
+                    pop!(grads[j, :])
+                end
+                if find_fig == true break end
+            end
+            if find_fig == true break end
+        end
+    end
+    return params, grads
+end
