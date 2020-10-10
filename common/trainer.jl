@@ -32,8 +32,8 @@ function train!(trainer::Trainer, data_size, batch_size, max_epoch, max_iters, t
     for epoch = 1:max_epoch
         # シャッフルしたミニバッチの生成
         indices = rand(1:data_size, batch_size) # 1～data_sizeの範囲の一意な数値を要素に持つ要素数data_sizeのVectorを返す
-        batch_x = train_x[indices, :]
-        batch_t = train_t[indices, :]
+        batch_x = selectdim(train_x, 1, indices)
+        batch_t = selectdim(train_t, 1, indices)
         
         for iter = 1:max_iters
             total_loss, loss_count = iteration!(trainer, iter, max_iters, total_loss, loss_count, batch_x, batch_t)
