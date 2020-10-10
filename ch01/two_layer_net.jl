@@ -40,7 +40,7 @@ end
 # Python版のTwoLayerNetのpredict()
 function predict!(model::TwoLayerNet, x)
     for layer in model.layers
-        x = AbstractLayer.forward!(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
+        x = forward!(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
     end
     return x
 end
@@ -48,15 +48,15 @@ end
 # Python版のTwoLayersNetのforward()
 function forward!(model::TwoLayerNet, x, t)
     score = predict!(model, x)
-    loss = AbstractLayer.forward!(model.loss_layer, score, t) # SoftmaxWithLoss()のforward()
+    loss = forward!(model.loss_layer, score, t) # SoftmaxWithLoss()のforward()
     return loss
 end
 
 # Python版のTwoLayersNetのbackward()
 function backward!(model::TwoLayerNet; dout=1)
-    dout = AbstractLayers.backward!(model.loss_layer, dout=dout) # SoftmaxWithLoss()のbackward()
+    dout = backward!(model.loss_layer, dout=dout) # SoftmaxWithLoss()のbackward()
     for layer in reverse(model.layers)
-        dout = AbstractLayer.backward!(layer, dout=dout)
+        dout = backward!(layer, dout=dout)
     end
     return dout
 end
