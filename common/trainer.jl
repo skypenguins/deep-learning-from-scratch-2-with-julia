@@ -48,6 +48,7 @@ function iteration!(trainer::Trainer, iter, max_iters, total_loss, loss_count, b
     loss = forward!(trainer.model, batch_x, batch_t) # BaseModel(TwoLayersNet)内に定義
     # 勾配を求める
     backward!(trainer.model) # BaseModel(TwoLayersNet)内に定義
+    params, grads = remove_duplicate(trainer.model.params, trainer.model.grads)
     # パラメータを更新
     update!(trainer.optimizer, trainer.model.params, trainer.model.grads) # Optimizer内に定義
     # 損失履歴を追加
