@@ -23,7 +23,7 @@ function forward!(layer::MatMul, x)
 end
 
 # Keyword Argのデフォルトが指定されていない場合，必ず呼出側で引数指定する
-function backward!(layer::MatMul; dout)
+function backward!(layer::MatMul, dout)
     W, = layer.params
     dx = dout * W'
     dW = layer.x' * dout
