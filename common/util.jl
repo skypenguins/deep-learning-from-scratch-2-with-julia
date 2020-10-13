@@ -120,7 +120,7 @@ function ppmi(C; verbose=false, ϵ=1e-8)
 
     返り値:
     M PPMI行列 =#
-    M = zeros(size(C)...)
+    M = zero(C)
     N = sum(C)
     S = sum(C, dims=1)
     total = size(C, 1) .* size(C, 2)
