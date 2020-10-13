@@ -17,7 +17,7 @@ mutable struct SimpleCBOW
 
         # 重みの初期化
         W_in = 0.01 .* Random.randn(V, H) # Float32の指定は特にしない
-        W_out = 0.01 .* Random.randn(V, H) # Float32の指定は特にしない
+        W_out = 0.01 .* Random.randn(H, V) # Float32の指定は特にしない
 
         # レイヤの生成
         self.in_layer0 = MatMul(W_in)
@@ -40,18 +40,19 @@ mutable struct SimpleCBOW
 end
 
 function forward!(self::SimpleCBOW, contexts, target)
-    h0 = AbstractLayer.forward!(self.in_layer0, contexts[:, 1]) # MatMulのforward!
-    h1 = AbstractLayer.forward!(self.in_layer1, contexts[:, 2]) # MatMulのforward!
-    h = (h0 + h1) .* 0.5
-    score = AbstractLayer.forward!(self.out_layer, h) # MatMulのforward!
-    loss = AbstractLayer.forward!(self.loss_layer, score, target) # SoftmaxWithLossのforward!
+    # contextsの形状は3次元決め打ち
+    h0 = forward!(self.in_layer0, contexts[:, 1, :]) # MatMulのforward!
+    h1 = forward!(self.in_layer1, contexts[:, 2, :]) # MatMulのforward!
+    h = (h0 .+ h1) .* 0.5
+    score = forward!(self.out_layer, h) # MatMulのforward!
+    loss = forward!(self.loss_layer, score, target) # SoftmaxWithLossのforward!
     return loss
 end
 
 function backward!(self::SimpleCBOW; dout=1)
-    ds = AbstractLayer.backward!(self.loss_layer, dout) # SoftmaxWithLossのbackward!
-    da = AbstractLayer.backward!(self.out_layer, ds) # MatMulのbackward!
+    ds = backward!(self.loss_layer; dout=dout) # SoftmaxWithLossのbackward!
+    da = backward!(self.out_layer, ds) # MatMulのbackward!
     da .*= 0.5
-    AbstractLayer.backward!(self.in_layer1, da) # MatMulのbackward!
-    AbstractLayer.backward!(self.in_layer0, da) # MatMulのbackward!
+    backward!(self.in_layer1, da) # MatMulのbackward!
+    backward!(self.in_layer0, da) # MatMulのbackward!
 end
