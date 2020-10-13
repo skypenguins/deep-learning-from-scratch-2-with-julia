@@ -68,31 +68,29 @@ end
 function remove_duplicate(params, grads)
     #= パラメータ配列の重複する重みを一つに集約し，
     その重みに対応する勾配を加算する =#
-    _params, _grads = params[:, :], grads[:, :]
+    _params, _grads = params, grads
+    find_fig = false
 
-    while true
-        find_fig = false
+    while find_fig == false
         L = length(_params)
 
-        for i = 1:L
-            for j = (i + 1):(L + 1)
+        for i = 1:(L - 1)
+            for j = (i + 1):L
                 # 重みを共有する場合
                 if _params[i, :] == _params[j, :]
-                    grads[i, :] .+= grads[j, :]
+                    _grads[i, :] .+= _grads[j, :]
+                    pop!(_params[j, :])
+                    pop!(_grads[j, :])
                     find_fig = true
-                    pop!(params[j, :])
-                    pop!(grads[j, :])
-                elseif (ndims(params[i, :]) == 2) && (ndims(params[j, :]) == 2) && \
-                    (size(params[i, :]') == size(params[j, :])) && (params[i, :]' == params[j, :])
-                    grads[i, :] .+= grads[j, :]'
+                # 転置行列として重みを共有する場合
+                elseif (ndims(_params[i, :]) == 2) && (ndims(_params[j, :]) == 2) && (size(_params[i, :]') == size(_params[j, :])) && (_params[i, :]' == _params[j, :])
+                    _grads[i, :] .+= _grads[j, :]'
+                    pop!(_params[j, :])
+                    pop!(_grads[j, :])
                     find_fig = true
-                    pop!(params[j, :])
-                    pop!(grads[j, :])
                 end
-                if find_fig == true break end
             end
-            if find_fig == true break end
         end
     end
-    return params, grads
+    return _params, _grads
 end
