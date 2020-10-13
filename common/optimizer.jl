@@ -42,18 +42,21 @@ end
 function update!(self::Adam, params, grads)
     if self.m === nothing
         self.m, self.v = [], []
-        for param = params
-            push!(m, zeros(size(param)...))
-            push!(v, zeros(size(param)...))
+        for i = 1:lastindex(params)
+            for j = 1:lastindex(params[i])
+                push!(self.m, zero(params[i][j]))
+                push!(self.v, zero(params[i][j]))
+            end
         end
     end
     self.iter += 1
-    lr_t = self.lr .* sqrt(1.0 - self.β_2^self.iter) / (1.0 - self.β_1^self.iter)
+    lr_t = self.lr * sqrt(1.0 - self.β_2^self.iter) / (1.0 - self.β_1^self.iter)
 
-    for i = 1:length(params)
-        self.m[i] .+= (1 - self.β_1) * (grads[i] - self.m[i])
-        self.v[i] .+= (1 - self.β_2) * (grads[i]^2 - self.v[i])
-
-        params[i] .-= lr_t .* self.m[i] / (sqrt(self.v[i]) .+ 1e-7)
+    for i = 1:lastindex(params)
+        for j = 1:lastindex(params[i])
+            self.m[i] +=  (1 - self.β_1) .* (grads[i][j] .- self.m[i])
+            self.v[i] +=  (1 - self.β_2) .* (grads[i][j].^2 .- self.v[i])
+            params[i][j] -= lr_t .* self.m[i] ./ (sqrt.(self.v[i]) .+ 1e-7)
+        end
     end
 end
