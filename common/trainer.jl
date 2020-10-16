@@ -55,11 +55,11 @@ function iteration!(trainer::Trainer, iter, max_iters, total_loss, loss_count, b
     push!(trainer.loss_list, loss)
     total_loss += loss
     loss_count += 1
-    # 定期的に学習経過を出力
-    if iter % trainer.eval_interval == 0
+
+    # 定期的に学習経過を出力（avg_lossはloss_listに追加しない）
+    if (iter * trainer.current_epoch % trainer.eval_interval) == 0
         avg_loss = total_loss / loss_count
         println("| epoch $(trainer.current_epoch) | iter $(iter) / $(max_iters) | loss $(round(avg_loss, digits=2))")
-        push!(trainer.loss_list, avg_loss)
         total_loss, loss_count = 0, 0
     end
     return total_loss, loss_count
@@ -72,17 +72,15 @@ function remove_duplicate(params, grads)
 
     # 重複を検出するまでループ
     for h = 1:lastindex(_params)
-        for i = 1:lastindex(_params[h]) - 1
-            @show size(_params[h])
+        for i = 1:(lastindex(_params[h]) - 1)
             for j = (i + 1):lastindex(_params[h])
-                @show size(_params[h])
-                    # 重みを共有する場合
+                # 重みを共有する場合
                 if _params[h][i, :] == _params[h][j, :]
                     _grads[h][i, :] .+= _grads[h][j, :]
                     pop!(_params[h][j, :])
                     pop!(_grads[h][j, :])
                     return _params, _grads
-                    # 転置行列として重みを共有する場合
+                # 転置行列として重みを共有する場合
                 elseif (ndims(_params[h][i, :]) == 2) && (ndims(_params[h][j, :]) == 2) && (size(_params[h][i, :]') == size(_params[h][j, :])) && (_params[h][i, :]' == _params[h][j, :])
                     _grads[h][i, :] .+= _grads[h][j, :]'
                     pop!(_params[h][j, :])
