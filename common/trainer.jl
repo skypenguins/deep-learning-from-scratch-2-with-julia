@@ -69,25 +69,25 @@ function remove_duplicate(params, grads)
     #= パラメータ配列の重複する重みを一つに集約し，
     その重みに対応する勾配を加算する =#
     _params, _grads = params, grads
-    find_fig = false
 
-    while find_fig == false
-        L = length(_params)
-
-        for i = 1:(L - 1)
-            for j = (i + 1):L
-                # 重みを共有する場合
-                if _params[i, :] == _params[j, :]
-                    _grads[i, :] .+= _grads[j, :]
-                    pop!(_params[j, :])
-                    pop!(_grads[j, :])
-                    find_fig = true
-                # 転置行列として重みを共有する場合
-                elseif (ndims(_params[i, :]) == 2) && (ndims(_params[j, :]) == 2) && (size(_params[i, :]') == size(_params[j, :])) && (_params[i, :]' == _params[j, :])
-                    _grads[i, :] .+= _grads[j, :]'
-                    pop!(_params[j, :])
-                    pop!(_grads[j, :])
-                    find_fig = true
+    # 重複を検出するまでループ
+    for h = 1:lastindex(_params)
+        for i = 1:lastindex(_params[h]) - 1
+            @show size(_params[h])
+            for j = (i + 1):lastindex(_params[h])
+                @show size(_params[h])
+                    # 重みを共有する場合
+                if _params[h][i, :] == _params[h][j, :]
+                    _grads[h][i, :] .+= _grads[h][j, :]
+                    pop!(_params[h][j, :])
+                    pop!(_grads[h][j, :])
+                    return _params, _grads
+                    # 転置行列として重みを共有する場合
+                elseif (ndims(_params[h][i, :]) == 2) && (ndims(_params[h][j, :]) == 2) && (size(_params[h][i, :]') == size(_params[h][j, :])) && (_params[h][i, :]' == _params[h][j, :])
+                    _grads[h][i, :] .+= _grads[h][j, :]'
+                    pop!(_params[h][j, :])
+                    pop!(_grads[h][j, :])
+                    return _params, _grads
                 end
             end
         end
