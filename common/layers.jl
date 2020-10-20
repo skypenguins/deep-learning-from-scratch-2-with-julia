@@ -125,3 +125,29 @@ end
 function backward!(layer::Sigmoid; dout)
     return dx = dout .* (1.0 .- layer.out) .* layer.out
 end
+
+mutable struct Embedding <: AbstractLayer
+    params
+    grads
+    idx
+    function Embedding(W)
+        layer = new()
+        layer.params = [W]
+        layer.grads = [zeros(W)]
+        layer.idx = nothing
+        return layer
+    end
+end
+
+function forward!(layer::Embedding, idx)
+    W, = layer.params
+    layer.idx = idx
+    out = selectdim(W, 1, idx)
+    return out
+end
+
+function backward!(layer::Embedding, dout)
+    dW, = self.grads
+    dW = deepcopy(zero(dW))
+    selectdim(dW, 1, layer.idx) .+= dout
+end
