@@ -24,7 +24,7 @@ end
 
 function backward!(self::EmbeddingDot, dout)
     h, target_W = self.cache
-    dout = reshape(dout, size(dout, 1))
+    dout = reshape(dout, size(dout, 1), 1)
 
     dtarget_W = dout .* h
     backward!(self.embed, dtarget_W)
