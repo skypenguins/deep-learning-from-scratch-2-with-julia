@@ -57,7 +57,8 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
 end
 
 function cos_similarity(x, y; ϵ=1e-8)
-    """コサイン類似度の算出
+    """
+    コサイン類似度の算出
     パラメータ:
     x ベクトル
     y ベクトル
