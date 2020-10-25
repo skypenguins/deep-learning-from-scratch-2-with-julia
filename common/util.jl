@@ -21,7 +21,7 @@ function preprocess(text)
 end
 
 function create_co_matrix(corpus, vocab_size; windows_size=1)
-    #= 
+    """
     共起行列の作成
 
     パラメータ:
@@ -30,7 +30,8 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     windows_size 窓の大きさ（これが1の場合，単語の左右1単語がコンテキスト）
     
     返り値:
-    co_matrix 共起行列 =#
+    co_matrix 共起行列
+    """
 
     corpus_size = length(corpus)
     co_matrix = zeros(Int32, (vocab_size, vocab_size)...)
@@ -70,13 +71,15 @@ function cos_similarity(x, y; ϵ=1e-8)
 end
 
 function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
-    #= 類似単語の検索
+    """
+    類似単語の検索
     パラメータ:
     query クエリ（テキスト）
     word_to_id 単語から単語IDへのディクショナリ
     id_to_word 単語IDから単語へのディクショナリ
     word_matrix 単語ベクトルをまとめた行列。各行に対応する単語のベクトルが格納されていることを想定
-    top 上位何位まで表示するか =#
+    top 上位何位まで表示するか
+    """
 
     # 1.クエリを取り出す
     if false == get(word_to_id, query, false)
@@ -112,14 +115,16 @@ function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
 end
 
 function ppmi(C; verbose=false, ϵ=1e-8)
-    #= 正の相互情報量（PPMI）の作成
+    """
+    正の相互情報量（PPMI）の作成
     パラメータ:
     C 共起行列
     verbose 進捗を表示するか
     ϵ ゼロ除算回避のための定数
 
     返り値:
-    M PPMI行列 =#
+    M PPMI行列
+    """
     M = zero(C)
     N = sum(C)
     S = sum(C, dims=1)
@@ -143,18 +148,8 @@ function ppmi(C; verbose=false, ϵ=1e-8)
 end
 
 function create_context_target(corpus; window_size=1)
-    #= 
+    """
     コンテキストとターゲットの作成
-    ---
-    Python（NumPy）では1次元配列と$1 \times x$行列は同じ扱いだが，Juliaでは扱いが異なる。  
-    これは配列の扱いがJuliaの列指向とPythonの行指向で異なるためである。  
-    そのため，行指向の設計思想を基に実装されたアルゴリズムを列指向の設計思想で再実装することが理想ではあるが，Python版の行列やテンソルの形状と一致させるため，（あと初心者なので…）無理矢理，行指向の設計思想でコードを実装している。  
-
-    参考:  
-    > Julia arrays are column major (Fortran ordered) whereas NumPy arrays are row major (C-ordered) by default.  
-
-    Source: https://docs.julialang.org/en/v1/manual/noteworthy-differences/#Noteworthy-differences-from-Python
-    ---
 
     パラメータ:
     corpus コーパス（単語IDのリスト）
@@ -162,7 +157,8 @@ function create_context_target(corpus; window_size=1)
 
     返り値:
     contexts コーパス中の全単語IDのコンテキスト
-    target ターゲットとする単語ID =#
+    target ターゲットとする単語ID
+    """
     target = corpus[window_size + 1:end - window_size]
     cs = []
 
@@ -176,24 +172,16 @@ function create_context_target(corpus; window_size=1)
 end
 
 function convert_one_hot(corpus, vocab_size)
-    #= one-hot表現への変換
-    ---
-    Python（NumPy）では1次元配列と$1 \times x$行列は同じ扱いだが，Juliaでは扱いが異なる。  
-    これは配列の扱いがJuliaの列指向とPythonの行指向で異なるためである。  
-    そのため，行指向の設計思想を基に実装されたアルゴリズムを列指向の設計思想で再実装することが理想ではあるが，Python版の行列やテンソルの形状と一致させるため，（あと初心者なので…）無理矢理，行指向の設計思想でコードを実装している。  
-
-    参考:  
-    > Julia arrays are column major (Fortran ordered) whereas NumPy arrays are row major (C-ordered) by default.  
-
-    Source: https://docs.julialang.org/en/v1/manual/noteworthy-differences/#Noteworthy-differences-from-Python
-    ---
+    """
+    one-hot表現への変換
 
     パラメータ:
     corpus 単語IDのリスト（1次元もしくは2次元のNumPy配列）
     vocab_size 語彙の大きさ
 
     返り値
-    one-hot表現（1次元もしくは2次元のNumPy配列） =#
+    one-hot表現（1次元もしくは2次元のNumPy配列）
+    """
     N = size(corpus, 1)
 
     if ndims(corpus) == 1

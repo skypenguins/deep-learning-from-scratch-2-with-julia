@@ -1,9 +1,10 @@
 abstract type Optim end
 
 mutable struct SGD <: Optim
-    #= 
+    """
     確率的勾配降下法
-    Stocastic Gradient Descent =#
+    Stocastic Gradient Descent
+    """
     lr
     function SGD(;lr=0.01)
         new(lr)
@@ -19,8 +20,10 @@ function update!(self::SGD, params, grads)
 end
 
 mutable struct Adam <: Optim
-    #= Adam
-    (http://arxiv.org/abs/1412.6980v8) =#
+    """
+    Adam
+    (http://arxiv.org/abs/1412.6980v8)
+    """
     lr
     β_1
     β_2
