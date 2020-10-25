@@ -57,14 +57,15 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
 end
 
 function cos_similarity(x, y; ϵ=1e-8)
-    #= コサイン類似度の算出
+    """コサイン類似度の算出
     パラメータ:
     x ベクトル
     y ベクトル
     ϵ ゼロ除算の防止のための定数
 
     返り値:
-    内積 =#
+    内積
+    """
     nx = x ./ (sqrt(sum(x.^2)) .+ ϵ)
     ny = y ./ (sqrt(sum(y.^2)) .+ ϵ)
     return dot(nx, ny)
