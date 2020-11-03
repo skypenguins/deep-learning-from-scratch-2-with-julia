@@ -82,7 +82,7 @@ function get_negative_sample(self::UnigramSampler, target)
     return negative_sample
 end
 
-mutable struct NegativeSamplingLoss
+mutable struct NegativeSamplingLoss <: AbstractLayer
     sample_size
     sampler
     loss_layers
@@ -98,9 +98,10 @@ mutable struct NegativeSamplingLoss
 
         self.params, self.grads = [], []
         for layer = self.embed_dot_layers
-            self.params += layer.params
-            self.grads += layer.grads
+            push!(self.params, layer.params)
+            push!(self.grads, layer.grads)
         end
+        return self
     end
 end
 
