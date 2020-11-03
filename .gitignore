@@ -2,3 +2,4 @@
 .*/
 ptb.*.txt
 *.pkl
+*.npy
