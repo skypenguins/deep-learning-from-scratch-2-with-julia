@@ -2,7 +2,7 @@ using HTTP
 using PyCall
 using NPZ
 # pikcleを扱うためのPythonのモジュールの読み込み
-@pyimport pickle
+pickle = pyimport("pickle")
 
 url_base = "https://raw.githubusercontent.com/tomsercu/lstm/master/data/"
 key_file = Dict(
