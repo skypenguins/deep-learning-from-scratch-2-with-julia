@@ -149,7 +149,7 @@ function ppmi(C; verbose=false, ϵ=1e-8)
     return M
 end
 
-function create_context_target(corpus; window_size=1)
+function create_contexts_target(corpus; window_size=1)
     """
     コンテキストとターゲットの作成
 
