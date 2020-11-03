@@ -81,3 +81,55 @@ function get_negative_sample(self::UnigramSampler, target)
     
     return negative_sample
 end
+
+mutable struct NegativeSamplingLoss
+    sample_size
+    sampler
+    loss_layers
+    embed_dot_layers
+    params
+    grads
+    function NegativeSamplingLoss(W, corpus; power=0.75, sample_size=5)
+        self = new()
+        self.sample_size = sample_size
+        self.sampler = UnigramSampler(corpus, power, sample_size)
+        self.loss_layers = [SigmoidWithLoss() for _ = 1:sample_size]
+        self.embed_dot_layers = [EmbeddingDot(W) for _ = 1:sample_size]
+
+        self.params, self.grads = [], []
+        for layer = self.embed_dot_layers
+            self.params += layer.params
+            self.grads += layer.grads
+        end
+    end
+end
+
+function forward!(layer::NegativeSamplingLoss, h, target)
+    batch_size = size(target, 1)
+    negative_sample = get_negative_sample(layer.sampler, target)
+
+    # 正例の順伝播
+    score = forward!(layer.embed_dot_layers[1], target)
+    correct_label = ones(Int32, batch_size)
+    loss = forward!(layer.loss_layers[1], score, correct_label)
+
+    # 負例の順伝播
+    negative_label = zeros(Int32, batch_size)
+    for i = 1:sample_size
+        negative_target = negative_sample[:, i]
+        score = forward!(layer.embed_dot_layers[1 + i], h, negative_target)
+        loss .+= forward!(layer.loss_layers[1 + i], score, negative_label)
+    end
+
+    return loss
+end
+
+function backward!(layer::NegativeSamplingLoss; dout=1)
+    dh = 0
+    for (l0, l1) = zip(layer.loss_layers, layer.embed_dot_layers)
+        dscore = backward!(l0, dout)
+        hf .+= backward!(l1, dscore)
+    end
+
+    return dh
+end
