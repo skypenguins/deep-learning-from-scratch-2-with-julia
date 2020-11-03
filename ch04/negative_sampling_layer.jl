@@ -93,8 +93,8 @@ mutable struct NegativeSamplingLoss
         self = new()
         self.sample_size = sample_size
         self.sampler = UnigramSampler(corpus, power, sample_size)
-        self.loss_layers = [SigmoidWithLoss() for _ = 1:sample_size]
-        self.embed_dot_layers = [EmbeddingDot(W) for _ = 1:sample_size]
+        self.loss_layers = [SigmoidWithLoss() for _ = 1:(sample_size + 1)]
+        self.embed_dot_layers = [EmbeddingDot(W) for _ = 1:(sample_size + 1)]
 
         self.params, self.grads = [], []
         for layer = self.embed_dot_layers
