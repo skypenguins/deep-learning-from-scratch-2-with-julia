@@ -151,3 +151,32 @@ function backward!(layer::Embedding, dout)
     dW = deepcopy(zero(dW))
     selectdim(dW, 1, layer.idx) .+= dout
 end
+
+mutable struct SigmoidWithLoss <: AbstractLayer
+    params
+    grads
+    loss
+    y
+    t
+    function SigmoidWithLoss()
+        self = new()
+        self.loss = nothing
+        self.y = nothing
+        self.t = nothing
+        return self
+    end
+end
+
+function forward!(layer::SigmoidWithLoss, x, t)
+    layer.t = t
+    layer.y = 1 ./ (1 .+ exp.(-x))
+
+    layer.loss = cross_entropy_error(hcat(1 - layer.y, layer.y), layer.t)
+    return layer.loss
+end
+
+function backward!(layer::SigmoidWithLoss; dout=1)
+    batch_size = size(layer.t, 1)
+    dx = (layer.y - layer.t) .* dout ./ batch_size
+    return dx
+end
