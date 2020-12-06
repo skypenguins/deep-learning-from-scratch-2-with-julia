@@ -44,9 +44,13 @@ mutable struct UnigramSampler
         self.vocab_size = nothing
         self.word_p = nothing
 
-        counts = []
+        counts = Dict()
         for word_id = corpus
-            counts[word_id] += 1
+            if nothing == get(counts, word_id, nothing)
+                get!(counts, word_id, 1)
+            else
+                counts[word_id] += 1
+            end
         end
 
         vocab_size = length(counts)
