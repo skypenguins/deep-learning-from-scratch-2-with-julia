@@ -133,7 +133,7 @@ mutable struct Embedding <: AbstractLayer
     function Embedding(W)
         layer = new()
         layer.params = [W]
-        layer.grads = [zeros(W)]
+        layer.grads = [zero(W)]
         layer.idx = nothing
         return layer
     end
