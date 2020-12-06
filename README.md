@@ -8,6 +8,7 @@ Python版ではニューラルネットワークのレイヤーをクラスで�
 ## Julia arrays are column major
 Python（NumPy）の配列は行指向（C由来）ですが、Juliaの配列はデフォルトでは列指向（Fortran由来）となっている。  
 > Julia arrays are column major (Fortran ordered) whereas NumPy arrays are row major (C-ordered) by default.
+
 Source: https://docs.julialang.org/en/v1/manual/noteworthy-differences/#Noteworthy-differences-from-Python
 
 # Prerequisites
