@@ -26,7 +26,8 @@ mutable struct CBOW
         self.ns_loss = NegativeSamplingLoss(W_out, corpus; power=0.75, sample_size=5)
 
         # 全ての重みと勾配を配列にまとめる
-        layers = self.in_layers .+ [self.ns_loss]
+        layers = vcat(self.in_layers, self.ns_loss)
+
         self.params, self.grads = [], []
         for layer in layers
             push!(self.params, layer.params)
