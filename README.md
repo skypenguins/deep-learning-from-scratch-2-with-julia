@@ -22,3 +22,6 @@ Source: https://docs.julialang.org/en/v1/manual/noteworthy-differences/#Notewort
   - for `pickle` module
 - HTTP
 - NPZ
+
+# License
+[MIT License](./LICENSE)
