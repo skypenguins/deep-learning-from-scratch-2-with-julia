@@ -40,7 +40,7 @@ end
 # Python版のTwoLayerNetのpredict()
 function predict!(model::TwoLayerNet, x)
     for layer in model.layers
-        x = forward!(layer, x) # Todo:同名モジュールをusingした場合でもモジュール名を省略したい
+        x = forward!(layer, x)
     end
     return x
 end
