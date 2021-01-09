@@ -1,4 +1,6 @@
 # Deep Learning from Scratch 2 with Julia
+![GitHub](https://img.shields.io/github/license/skypenguins/deep-learning-from-scratch-2-with-julia)
+
 Porting of "Deep Learning from Scratch 2" in Julia
 
 # Diffrences from the Python version
