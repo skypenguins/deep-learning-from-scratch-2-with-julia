@@ -1,6 +1,3 @@
-module AbstractLayers
-export MatMul, Affine, Softmax, SoftmaxWithLoss, Sigmoid, forward, backward
-
 include("./functions.jl")
 
 using .Functions: softmax, cross_entropy_error
@@ -8,62 +5,58 @@ using .Functions: softmax, cross_entropy_error
 abstract type AbstractLayer end
 
 mutable struct MatMul <: AbstractLayer
-    params::AbstractArray{Float64}
-    grads::AbstractArray{Float64}
-    W::Float64
-    x::Float64
+    params
+    grads
+    x
     function MatMul(W)
-        params = (W,)
-        grads = (zero(W),)
-        new(params, grads, W)
+        layer = new()
+        layer.params = [W]
+        layer.grads = [zero(W)]
+        return layer
     end
 end
 
-function forward(self::MatMul, x)
-    W, = self.params
-    out = x * W
-    self.x = x
-    return out
+function forward!(layer::MatMul, x)
+    W, = layer.params
+    layer.x = x
+    return out = x * W
 end
 
-function backward(self::MatMul, dout)
-    W, = self.params
+# Keyword Argのデフォルトが指定されていない場合，必ず呼出側で引数指定する
+function backward!(layer::MatMul, dout)
+    W, = layer.params
     dx = dout * W'
-    dW = self.x' * dout
-    self.grads[1] = deepcopy(dW)
+    dW = layer.x' * dout
+    layer.grads[1] = deepcopy(dW)
     return dx
 end
 
 mutable struct Affine <: AbstractLayer
     params
     grads
-    W
-    b
     x
     function Affine(W, b)
-        params = (W, b) # Pythonのlistの代わりにtupleを利用
-        grads = (zero(W), zero(b))
-        new(params, grads)
+        layer = new()
+        layer.params = [W, b]
+        layer.grads = [zero(W), zero(b)]
+        return layer
     end
 end
 
-function forward(self::Affine, x)
-    W, b = self.params
-    out = x * W .+ b' # JuliaのブロードキャストはNumPyと挙動が異なり，次元を追加しないため，転置して次元数を揃える
-    self.x = x
-    return out
+function forward!(layer::Affine, x)
+    W, b = layer.params
+    layer.x = x
+    return out = x * W .+ b
 end
 
-function backward(self::Affine, dout)
-    W, b = self.params
+function backward!(layer::Affine; dout)
+    W, b = layer.params
     dx = dout * W'
-    dW = self.x' * dout
-    @show size(dx)
-    @show size(dW)
+    dW = layer.x' * dout
     db = sum(dout, dims=1)
 
-    self.grads[1] = deepcopy(dW)
-    self.grads[2] = deepcopy(db)
+    layer.grads[1] = dW
+    layer.grads[2] = db
     return dx
 end
 
@@ -72,22 +65,21 @@ mutable struct Softmax <: AbstractLayer
     grads
     out
     function Softmax()
-        params = tuple
-        grads = tuple
-        new(params, grads)
+        layer = new()
+        layer.params = []
+        layer.grads = []
+        return layer
     end
 end
 
-function forward(self::Softmax, x)
-    self.out = softmax(x)
-    return self.out
+function forward!(layer::Softmax, x)
+    return layer.out = softmax(x)
 end
 
-function backward(self::Softmax, dout)
-    dx = self.out .* dout
+function backward!(layer::Softmax; dout)
+    dx = layer.out .* dout
     sumdx = sum(dx, dims=2)
-    dx -= self.out .* sumdx
-    return dx
+    return dx -= layer.out .* sumdx
 end
 
 mutable struct SoftmaxWithLoss <: AbstractLayer
@@ -96,33 +88,22 @@ mutable struct SoftmaxWithLoss <: AbstractLayer
     y # SoftmaxレイヤからCrossEntropyErrorレイヤへのデータ
     t
     function SoftmaxWithLoss()
-        params = tuple
-        grads = tuple
-        new(params, grads)
+        layer = new()
+        layer.params = []
+        layer.grads = []
+        return layer
     end
 end
 
-function forward(self::SoftmaxWithLoss, x, t)
-    self.t = t
-    self.y = softmax(x)
-
-    # 教師ラベルがone-hotベクトルの場合，正解ラベルのインデックスに変換
-    if length(self.t) == length(self.y)
-        self.t = argmax(self.t, dims=2)
-    end
-
-    loss = cross_entropy_error(self.y, self.t)
-    return loss
+function forward!(layer::SoftmaxWithLoss, x, t)
+    layer.t = t
+    layer.y = softmax(x)
+    return loss = cross_entropy_error(layer.y, layer.t)
 end
 
-function backward(self::SoftmaxWithLoss, dout=1)
-    batch_size = size(self.t, 1)
-    
-    dx = deepcopy(self.y)
-    dx[collect(1:batch_size), self.t] -= 1 # 配列のスライスはコンマ必要
-    dx = dx .* dout
-    dx = dx ./ batch_size
-    return dx
+function backward!(layer::SoftmaxWithLoss; dout=1.0)
+    batch_size = size(layer.t, 1)
+    return dx = (layer.y .- layer.t) .* dout ./ batch_size
 end
 
 mutable struct Sigmoid <: AbstractLayer
@@ -130,20 +111,72 @@ mutable struct Sigmoid <: AbstractLayer
     grads
     out
     function Sigmoid()
-        params = tuple
-        grads = tuple
-        new(params, grads)
+        layer = new()
+        layer.params = []
+        layer.grads = []
+        return layer
     end
 end
 
-function forward(self::Sigmoid, x)
-    out = 1 ./ (1 .+ exp.(-x))
-    self.out = out
+function forward!(layer::Sigmoid, x)
+    return layer.out = 1 ./ (1 .+ exp.(-x))
+end
+
+function backward!(layer::Sigmoid; dout)
+    return dx = dout .* (1.0 .- layer.out) .* layer.out
+end
+
+mutable struct Embedding <: AbstractLayer
+    params
+    grads
+    idx
+    function Embedding(W)
+        layer = new()
+        layer.params = [W]
+        layer.grads = [zero(W)]
+        layer.idx = nothing
+        return layer
+    end
+end
+
+function forward!(layer::Embedding, idx)
+    W, = layer.params
+    layer.idx = idx
+    out = selectdim(W, 1, idx)
     return out
 end
 
-function backward(self::Sigmoid, dout)
-    dx = dout .* (1.0 .- self.out) * self.out
-    return dx
+function backward!(layer::Embedding, dout)
+    dW, = self.grads
+    dW = deepcopy(zero(dW))
+    selectdim(dW, 1, layer.idx) .+= dout
 end
+
+mutable struct SigmoidWithLoss <: AbstractLayer
+    params
+    grads
+    loss
+    y
+    t
+    function SigmoidWithLoss()
+        self = new()
+        self.loss = nothing
+        self.y = nothing
+        self.t = nothing
+        return self
+    end
+end
+
+function forward!(layer::SigmoidWithLoss, x, t)
+    layer.t = t
+    layer.y = 1 ./ (1 .+ exp.(-x))
+
+    layer.loss = cross_entropy_error(hcat(1 - layer.y, layer.y), layer.t)
+    return layer.loss
+end
+
+function backward!(layer::SigmoidWithLoss; dout=1)
+    batch_size = size(layer.t, 1)
+    dx = (layer.y - layer.t) .* dout ./ batch_size
+    return dx
 end

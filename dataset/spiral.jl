@@ -3,14 +3,14 @@ using Random
 
 export load_data
 
-function load_data(seed=1984)
+function load_data(;seed=1984)
     Random.seed!(seed)  # 関数直後の!は関数が破壊的変更を行うことを示す
     @show seed
     N = 100             # クラスごとのサンプルサイズ
     DIM = 2             # データの要素数
     CLS_DIM = 3         # クラス数
 
-    x::AbstractArray{Float64} = zeros(N * CLS_DIM, DIM)
+    x = zeros(N * CLS_DIM, DIM)
     t = zeros(Integer, N * CLS_DIM, CLS_DIM)
 
     for j = 0:CLS_DIM - 1 # Juliaではインデックスが1始まりのため
