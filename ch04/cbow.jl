@@ -43,8 +43,7 @@ end
 function forward!(self::CBOW, contexts, target)
     h = 0
     for (i, layer) in enumerate(self.in_layers)
-    for (i, layer) = enumerate(self.in_layers)
-        h .+= forward!(contexts[:, i])
+        h .+= forward!(layer, contexts[:, i])
     end
     h .*= 1 ./ length(self.in_layers)
     loss = forward!(self.ns_loss, h, target)
