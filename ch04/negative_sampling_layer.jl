@@ -19,7 +19,7 @@ end
 
 function forward!(self::EmbeddingDot, h, idx)
     target_W = forward!(self.embed, idx)
-    out = sum(target_W .* h, dims=2)
+    out = sum(target_W .* h, dims = 2)
     self.cache = (h, target_W)
     return out
 end
@@ -45,7 +45,7 @@ mutable struct UnigramSampler
         self.word_p = nothing
 
         counts = Dict()
-        for word_id = corpus
+        for word_id in corpus
             if nothing == get(counts, word_id, nothing)
                 get!(counts, word_id, 1)
             else
@@ -61,7 +61,7 @@ mutable struct UnigramSampler
             self.word_p[i] = counts[i]
         end
 
-        self.word_p = self.word_p.^power
+        self.word_p = self.word_p .^ power
         self.word_p ./= sum(self.word_p)
 
         return self
@@ -78,11 +78,11 @@ function get_negative_sample(self::UnigramSampler, target)
         target_idx = target[i]
         p[target_idx] = 0
         p ./= sum(p)
-        negative_sample[i, :] = sample(self.vocab_size, ProbabilityWeights(p), self.sample_size, replace=false)
+        negative_sample[i, :] = sample(self.vocab_size, ProbabilityWeights(p), self.sample_size, replace = false)
     end
 
     # TODO: GPUで処理する際の演算
-    
+
     return negative_sample
 end
 
@@ -93,15 +93,15 @@ mutable struct NegativeSamplingLoss <: AbstractLayer
     embed_dot_layers
     params
     grads
-    function NegativeSamplingLoss(W, corpus; power=0.75, sample_size=5)
+    function NegativeSamplingLoss(W, corpus; power = 0.75, sample_size = 5)
         self = new()
         self.sample_size = sample_size
         self.sampler = UnigramSampler(corpus, power, sample_size)
-        self.loss_layers = [SigmoidWithLoss() for _ = 1:(sample_size + 1)]
-        self.embed_dot_layers = [EmbeddingDot(W) for _ = 1:(sample_size + 1)]
+        self.loss_layers = [SigmoidWithLoss() for _ = 1:(sample_size+1)]
+        self.embed_dot_layers = [EmbeddingDot(W) for _ = 1:(sample_size+1)]
 
         self.params, self.grads = [], []
-        for layer = self.embed_dot_layers
+        for layer in self.embed_dot_layers
             push!(self.params, layer.params)
             push!(self.grads, layer.grads)
         end
@@ -122,16 +122,16 @@ function forward!(layer::NegativeSamplingLoss, h, target)
     negative_label = zeros(Int32, batch_size)
     for i = 1:sample_size
         negative_target = negative_sample[:, i]
-        score = forward!(layer.embed_dot_layers[1 + i], h, negative_target)
-        loss .+= forward!(layer.loss_layers[1 + i], score, negative_label)
+        score = forward!(layer.embed_dot_layers[1+i], h, negative_target)
+        loss .+= forward!(layer.loss_layers[1+i], score, negative_label)
     end
 
     return loss
 end
 
-function backward!(layer::NegativeSamplingLoss; dout=1)
+function backward!(layer::NegativeSamplingLoss; dout = 1)
     dh = 0
-    for (l0, l1) = zip(layer.loss_layers, layer.embed_dot_layers)
+    for (l0, l1) in zip(layer.loss_layers, layer.embed_dot_layers)
         dscore = backward!(l0, dout)
         hf .+= backward!(l1, dscore)
     end

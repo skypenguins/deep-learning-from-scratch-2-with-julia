@@ -53,7 +53,7 @@ function backward!(layer::Affine; dout)
     W, b = layer.params
     dx = dout * W'
     dW = layer.x' * dout
-    db = sum(dout, dims=1)
+    db = sum(dout, dims = 1)
 
     layer.grads[1] = dW
     layer.grads[2] = db
@@ -78,7 +78,7 @@ end
 
 function backward!(layer::Softmax; dout)
     dx = layer.out .* dout
-    sumdx = sum(dx, dims=2)
+    sumdx = sum(dx, dims = 2)
     return dx -= layer.out .* sumdx
 end
 
@@ -101,7 +101,7 @@ function forward!(layer::SoftmaxWithLoss, x, t)
     return loss = cross_entropy_error(layer.y, layer.t)
 end
 
-function backward!(layer::SoftmaxWithLoss; dout=1.0)
+function backward!(layer::SoftmaxWithLoss; dout = 1.0)
     batch_size = size(layer.t, 1)
     return dx = (layer.y .- layer.t) .* dout ./ batch_size
 end
@@ -175,7 +175,7 @@ function forward!(layer::SigmoidWithLoss, x, t)
     return layer.loss
 end
 
-function backward!(layer::SigmoidWithLoss; dout=1)
+function backward!(layer::SigmoidWithLoss; dout = 1)
     batch_size = size(layer.t, 1)
     dx = (layer.y - layer.t) .* dout ./ batch_size
     return dx

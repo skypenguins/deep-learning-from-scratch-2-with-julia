@@ -49,8 +49,8 @@ function forward!(self::SimpleCBOW, contexts, target)
     return loss
 end
 
-function backward!(self::SimpleCBOW; dout=1)
-    ds = backward!(self.loss_layer; dout=dout) # SoftmaxWithLossのbackward!
+function backward!(self::SimpleCBOW; dout = 1)
+    ds = backward!(self.loss_layer; dout = dout) # SoftmaxWithLossのbackward!
     da = backward!(self.out_layer, ds) # MatMulのbackward!
     da .*= 0.5
     backward!(self.in_layer1, da) # MatMulのbackward!

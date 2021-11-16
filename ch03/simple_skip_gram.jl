@@ -49,9 +49,9 @@ function forward!(self::SimpleSkipGram, contexts, target)
     return loss
 end
 
-function backward!(self::SimpleSkipGram; dout=1)
-    dl1 = backward!(self.loss_layer1, dout=dout)
-    dl2 = backward!(self.loss_layer2, dout=dout)
+function backward!(self::SimpleSkipGram; dout = 1)
+    dl1 = backward!(self.loss_layer1, dout = dout)
+    dl2 = backward!(self.loss_layer2, dout = dout)
     ds = dl1 + dl2
     dh = backward!(self.out_layer, ds)
     backward!(self.in_layer, dh)

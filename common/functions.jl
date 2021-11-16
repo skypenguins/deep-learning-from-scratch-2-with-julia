@@ -13,7 +13,7 @@ end
 
 function softmax(x)
     y = []
-    for row_i in 1:size(x, 1)
+    for row_i = 1:size(x, 1)
         c = maximum(x[row_i, :])
         exp_a = exp.(x[row_i, :] .- c) # オーバフロー対策
         push!(y, exp_a ./ sum(exp_a))

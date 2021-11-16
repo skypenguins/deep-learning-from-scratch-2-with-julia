@@ -6,7 +6,7 @@ mutable struct SGD <: Optim
     Stocastic Gradient Descent
     """
     lr
-    function SGD(;lr=0.01)
+    function SGD(; lr = 0.01)
         new(lr)
     end
 end
@@ -30,7 +30,7 @@ mutable struct Adam <: Optim
     iter
     m
     v
-    function Adam(;lr=0.001, β_1=0.9, β_2=0.999)
+    function Adam(; lr = 0.001, β_1 = 0.9, β_2 = 0.999)
         self = new()
         self.lr = lr
         self.β_1 = β_1
@@ -57,8 +57,8 @@ function update!(self::Adam, params, grads)
 
     for i = 1:lastindex(params)
         for j = 1:lastindex(params[i])
-            self.m[i] +=  (1 - self.β_1) .* (grads[i][j] .- self.m[i])
-            self.v[i] +=  (1 - self.β_2) .* (grads[i][j].^2 .- self.v[i])
+            self.m[i] += (1 - self.β_1) .* (grads[i][j] .- self.m[i])
+            self.v[i] += (1 - self.β_2) .* (grads[i][j] .^ 2 .- self.v[i])
             params[i][j] -= lr_t .* self.m[i] ./ (sqrt.(self.v[i]) .+ 1e-7)
         end
     end

@@ -17,7 +17,7 @@ mutable struct Trainer <: AbstractTrainer
     end
 end
 
-function fit!(trainer::Trainer, x, t; max_epoch=10, batch_size=32, max_grad=nothing, eval_interval=20)
+function fit!(trainer::Trainer, x, t; max_epoch = 10, batch_size = 32, max_grad = nothing, eval_interval = 20)
     data_size = size(x, 1)
     max_iters = data_size ÷ batch_size
     trainer.eval_interval = eval_interval
@@ -28,13 +28,13 @@ end
 function train!(trainer::Trainer, data_size, batch_size, max_epoch, max_iters, train_x, train_t)
     total_loss = 0
     loss_count = 0
-    
+
     for epoch = 1:max_epoch
         # シャッフルしたミニバッチの生成
         indices = rand(1:data_size, batch_size) # 1～data_sizeの範囲の一意な数値を要素に持つ要素数data_sizeのVectorを返す
         batch_x = selectdim(train_x, 1, indices)
         batch_t = selectdim(train_t, 1, indices)
-        
+
         for iter = 1:max_iters
             total_loss, loss_count = iteration!(trainer, iter, max_iters, total_loss, loss_count, batch_x, batch_t)
         end
@@ -72,15 +72,15 @@ function remove_duplicate(params, grads)
 
     # 重複を検出するまでループ
     for h = 1:lastindex(_params)
-        for i = 1:(lastindex(_params[h]) - 1)
-            for j = (i + 1):lastindex(_params[h])
+        for i = 1:(lastindex(_params[h])-1)
+            for j = (i+1):lastindex(_params[h])
                 # 重みを共有する場合
                 if _params[h][i, :] == _params[h][j, :]
                     _grads[h][i, :] .+= _grads[h][j, :]
                     pop!(_params[h][j, :])
                     pop!(_grads[h][j, :])
                     return _params, _grads
-                # 転置行列として重みを共有する場合
+                    # 転置行列として重みを共有する場合
                 elseif (ndims(_params[h][i, :]) == 2) && (ndims(_params[h][j, :]) == 2) && (size(_params[h][i, :]') == size(_params[h][j, :])) && (_params[h][i, :]' == _params[h][j, :])
                     _grads[h][i, :] .+= _grads[h][j, :]'
                     pop!(_params[h][j, :])

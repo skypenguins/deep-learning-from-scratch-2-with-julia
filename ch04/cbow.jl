@@ -23,7 +23,7 @@ mutable struct CBOW
             layer = Embedding(W_in)
             push!(self.in_layers, layer)
         end
-        self.ns_loss = NegativeSamplingLoss(W_out, corpus; power=0.75, sample_size=5)
+        self.ns_loss = NegativeSamplingLoss(W_out, corpus; power = 0.75, sample_size = 5)
 
         # 全ての重みと勾配を配列にまとめる
         layers = vcat(self.in_layers, self.ns_loss)
@@ -42,6 +42,7 @@ end
 
 function forward!(self::CBOW, contexts, target)
     h = 0
+    for (i, layer) in enumerate(self.in_layers)
     for (i, layer) = enumerate(self.in_layers)
         h .+= forward!(contexts[:, i])
     end
@@ -50,10 +51,10 @@ function forward!(self::CBOW, contexts, target)
     return loss
 end
 
-function backward!(self::CBOW; dout=1)
-    dout = backward!(self.ns_loss, dout=dout)
+function backward!(self::CBOW; dout = 1)
+    dout = backward!(self.ns_loss, dout = dout)
     dout .*= 1 ./ length(self.in_layers)
-    for layer = self.in_layers
-        backward!(layer, dout=dout)
+    for layer in self.in_layers
+        backward!(layer, dout = dout)
     end
 end
