@@ -34,7 +34,7 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     """
 
     corpus_size = length(corpus)
-    co_matrix = zeros(Int32, (vocab_size, vocab_size)...)
+    co_matrix = zeros((vocab_size, vocab_size))
 
     for (idx, word_id) = enumerate(corpus)
         for i = 1:windows_size
