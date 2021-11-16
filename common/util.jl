@@ -8,7 +8,7 @@ function preprocess(text)
     word_to_id = Dict()
     id_to_word = Dict()
 
-    for word = words
+    for word in words
         if false == get(word_to_id, word, false)
             new_id = length(word_to_id) + 1     # 単語IDは配列のインデックス番号として使用するため0を含まないようにする
             push!(word_to_id, word => new_id)   # word_to_id = Dict(word_to_id..., word=>new_id) より高速(アロケーションは大きい)
@@ -16,11 +16,11 @@ function preprocess(text)
         end
     end
 
-    corpus = [word_to_id[w] for w = words]
+    corpus = [word_to_id[w] for w in words]
     return corpus, word_to_id, id_to_word
 end
 
-function create_co_matrix(corpus, vocab_size; windows_size=1)
+function create_co_matrix(corpus, vocab_size; windows_size = 1)
     """
     共起行列の作成
 
@@ -28,7 +28,7 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     corpus コーパス（単語IDのリスト）
     vocab_size 語彙の大きさ
     windows_size 窓の大きさ（これが1の場合，単語の左右1単語がコンテキスト）
-    
+
     返り値:
     co_matrix 共起行列
     """
@@ -36,7 +36,7 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     corpus_size = length(corpus)
     co_matrix = zeros((vocab_size, vocab_size))
 
-    for (idx, word_id) = enumerate(corpus)
+    for (idx, word_id) in enumerate(corpus)
         for i = 1:windows_size
             left_idx = idx - i
             right_idx = idx + i
@@ -56,7 +56,7 @@ function create_co_matrix(corpus, vocab_size; windows_size=1)
     return co_matrix
 end
 
-function cos_similarity(x, y; ϵ=1e-8)
+function cos_similarity(x, y; ϵ = 1e-8)
     """
     コサイン類似度の算出
     パラメータ:
@@ -67,12 +67,12 @@ function cos_similarity(x, y; ϵ=1e-8)
     返り値:
     内積
     """
-    nx = x ./ (sqrt(sum(x.^2)) .+ ϵ)
-    ny = y ./ (sqrt(sum(y.^2)) .+ ϵ)
+    nx = x ./ (sqrt(sum(x .^ 2)) .+ ϵ)
+    ny = y ./ (sqrt(sum(y .^ 2)) .+ ϵ)
     return dot(nx, ny)
 end
 
-function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
+function most_similar(query, word_to_id, id_to_word, word_matrix; top = 5)
     """
     類似単語の検索
     パラメータ:
@@ -102,7 +102,7 @@ function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
 
     # 3.コサイン類似度の結果から，その値を降順で出力
     count = 0
-    for i =  sortperm(-1 .* similarity)
+    for i in sortperm(-1 .* similarity)
         if id_to_word[i] == query
             continue
         end
@@ -116,7 +116,7 @@ function most_similar(query, word_to_id, id_to_word, word_matrix; top=5)
     end
 end
 
-function ppmi(C; verbose=false, ϵ=1e-8)
+function ppmi(C; verbose = false, ϵ = 1e-8)
     """
     正の相互情報量（PPMI）の作成
     パラメータ:
@@ -129,7 +129,7 @@ function ppmi(C; verbose=false, ϵ=1e-8)
     """
     M = zero(C)
     N = sum(C)
-    S = sum(C, dims=1)
+    S = sum(C, dims = 1)
     total = size(C, 1) .* size(C, 2)
     cnt = 0
 
@@ -149,7 +149,7 @@ function ppmi(C; verbose=false, ϵ=1e-8)
     return M
 end
 
-function create_contexts_target(corpus; window_size=1)
+function create_contexts_target(corpus; window_size = 1)
     """
     コンテキストとターゲットの作成
 
@@ -161,12 +161,12 @@ function create_contexts_target(corpus; window_size=1)
     contexts コーパス中の全単語IDのコンテキスト
     target ターゲットとする単語ID
     """
-    target = corpus[window_size + 1:end - window_size]
+    target = corpus[window_size+1:end-window_size]
     cs = []
 
-    for idx = (window_size + 1):(length(corpus) - window_size) # window_size=1の場合，開始のインデックス番号は2
+    for idx = (window_size+1):(length(corpus)-window_size) # window_size=1の場合，開始のインデックス番号は2
         # 各単語のコンテキストを取り出し，csに追加
-        push!(cs, corpus[filter(!iszero, -window_size:window_size) .+ idx]')
+        push!(cs, corpus[filter(!iszero, -window_size:window_size).+idx]')
     end
     # 全単語のコンテキストを作成
     contexts = vcat(cs...)
@@ -188,7 +188,7 @@ function convert_one_hot(corpus, vocab_size)
 
     if ndims(corpus) == 1
         one_hot = zeros(Int32, N, vocab_size)
-        for (idx, word_id) = enumerate(corpus)
+        for (idx, word_id) in enumerate(corpus)
             one_hot[idx, word_id] = 1
         end
     elseif ndims(corpus) == 2
